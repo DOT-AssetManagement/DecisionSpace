@@ -1,0 +1,15 @@
+body {
+    
+}
+
+@media (min-width: 1440px) {
+    .rightDiv p {
+        font-size: 15px;
+    }
+}
+
+@media (min-width: 2000px) {
+    .rightDiv p {
+        font-size: 17px;
+    }
+}

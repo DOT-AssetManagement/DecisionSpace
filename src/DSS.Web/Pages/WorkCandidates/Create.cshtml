@@ -1,0 +1,1239 @@
+﻿@page
+@model DSS.Web.Pages.WorkCandidates.CreateModel
+@{
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Pools";
+}
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">
+        Work Candidate
+    </h1>
+   
+    <div class="card mb-4">
+        <div class="row">
+            <div class="col-lg-2 col-md-3 mb-5 offset-10">
+                
+            </div>
+        </div>
+        <div class="card-body">
+
+           
+               
+
+            <link rel="stylesheet" href="https://code.jquery.com/ui/1.13.3/themes/base/jquery-ui.css">
+            <script src="https://code.jquery.com/ui/1.13.3/jquery-ui.js"></script>
+            <script>
+                $(function () {
+                    $("#tabs").tabs({
+                        create: function (event, ui) {
+                            // Initialize the active tab
+                            var activeId = ui.panel.attr("id");
+                            $("#tabs ul li:has(a[href='#" + activeId + "'])").addClass(activeId + "-active");
+                        },
+                        activate: function (event, ui) {
+                            var activeId = ui.newPanel.attr("id");
+                            // Remove active classes from all tabs
+                            $("#tabs ul li").removeClass(function (index, className) {
+                                return (className.match(/(^|\s)(tabs-general|tabs-safety|tabs-mobility|tabs-equity|tabs-resilience|tabs-condition|tabs-other)-active/g) || []).join(' ');
+                            });
+                            // Add the active class to the newly active tab
+                            $("#tabs ul li:has(a[href='#" + activeId + "'])").addClass(activeId + "-active");
+                        }
+                    });
+                });
+            </script>
+           
+            @{
+                var handlerName = !Model.WorkCandidateId.HasValue || Model.WorkCandidateId.ToString() == ""
+                ? "CreateWorkCandidate"
+                : "UpdateWorkCandidate";
+            }
+
+
+            <form method="POST" asp-page-handler="@handlerName">
+                <input type="hidden" id="WorkCandidateId" name="id" value="@Model.WorkCandidateId" />
+                <input type="hidden" id="PoolId" name="PoolId" value="@Model.PoolId" />
+            
+            <div id="tabs">
+                <ul>
+                    <li class="general-li"><a href="#tabs-general">General</a></li>
+                        <li class="safety-li"><a href="#tabs-safety">Safety</a></li>
+                        <li class="mobility-li"><a href="#tabs-mobility">Mobility and Economy</a></li>
+                        <li class="equity-li"><a href="#tabs-equity">Equity and Accessbility</a></li>
+                        <li class="resilience-li"><a href="#tabs-resilience">Resilience and Environment</a></li>
+                        <li class="condition-li"><a href="#tabs-condition">Condition and Performance</a></li>
+                        
+                            @if (@Model.WorkCandidateId != null)
+                            {
+                        <li class="other-li"><a href="#tabs-other">Other</a></li>
+                            }
+                </ul>
+                <div id="tabs-general">
+                    <div class="row mb-3">
+                        <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="input1" class="form-label">District</label>
+                                <select class="form-control" name="input.District" id="District" required>
+                                   <option value="">Select</option>
+                                    @foreach (var district in Model.DistrictList)
+                                    {
+                                        if (Model.WorkCandidates.District == district.DistrictId)
+                                        {
+                                            <option value="@district.DistrictId" selected>@district.DistrictName</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@district.DistrictId">@district.DistrictName</option>
+                                        }
+                                    }
+                                  
+                                </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="input1" class="form-label">County</label>
+                                <select class="form-control" name="input.Cnty" id="Cnty" required>
+                                    <option value="">Select</option>
+                                    </select>
+                    </div>
+
+
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="input1" class="form-label">Route</label>
+                                <select type="text" class="form-control" name="input.Route" id="Route" value="@Model.WorkCandidates.Route" required>
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="input1" class="form-label">Section</label>
+                                <select type="text" class="form-control" name="input.ToSection" id="Section" required>
+                                    <option value="">Select</option>
+                                </select>
+                            </div>
+
+                             <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="input1" class="form-label">Asset Type</label>
+                                <select class="form-control" name="input.AssetType" id="AssetType" asp-for="@Model.WorkCandidates.AssetType" required value="@Model.WorkCandidates.AssetType">
+                            <option value="">Select</option>
+                            <option value="B">Bridge</option>
+                            <option value="P">Pavement</option>
+                        </select>
+                    </div>
+
+                         <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="input1" class="form-label">Project Name</label>
+                                <select class="form-control" name="input.ProjectName" id="ProjectName" value="@Model.WorkCandidates.ProjectName">
+                                    @foreach (var project in Model.ProjectNames)
+                                    {
+                                        if (Model.WorkCandidates.ProjectName == @project.Replace("Project ", ""))
+                                        {
+                                            <option selected value="@project.Replace("Project ", "")">@project</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@project.Replace("Project ", "")">@project</option>
+                                        }                                        
+                                    }
+                                    </select>
+                            </div>
+                   
+
+                 
+                   
+                  
+                           
+                            <div class="col-lg-2 col-md-3 mb-5 BRKEY">
+                        <label for="input1" class="form-label">BRKEY</label>
+                                <select class="form-control" name="input.BRKEY" id="BRKEY" value="@Model.WorkCandidates.BRKEY">
+                                    <option value="">Select</option>
+                                    </select>
+                    </div>
+                            <div class="col-lg-2 col-md-3 mb-5 BRIDGE_ID">
+                        <label for="input1" class="form-label">BRIDGE ID</label>
+                                <input type="text" class="form-control" name="input.BRIDGE_ID" id="BRIDGE_ID" value="@Model.WorkCandidates.BRIDGE_ID" readonly>
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="input1" class="form-label">Work Type</label>
+                                <select class="form-control" name="Treatment" id="Treatment">
+                                    @foreach (var workType in Model.WorkTypeList)
+                                    {
+                                        if (Model.WorkCandidates.Treatment == workType.WorkType)
+                                        {
+                                            <option selected value="@workType.WorkType">@workType.WorkType</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@workType.WorkType">@workType.WorkType</option>
+                                        }
+                                    }
+                            
+                        </select>
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="input1" class="form-label">Description</label>
+                                <input type="text" class="form-control" name="input.Description" id="Description" value="@Model.WorkCandidates.Description">
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="input1" class="form-label">Cost</label>
+                        <div class="input-group"> 
+                            <span class="input-group-text">$</span>
+                                    <input type="text" class="form-control" name="input.Cost" id="Cost" value="@Model.WorkCandidates.Cost" oninput="validateDecimalInput(this)">
+                        </div>
+                    </div>
+                   
+
+                           
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Year" class="form-label">Year</label>
+                                <select class="form-control" name="input.Year" id="Year" value="@Model.WorkCandidates.Year" oninput="validateWholeNumberInput(this)">
+                                    <option value="">Select</option>
+                                    @for (int year = DateTime.Now.Year; year <= DateTime.Now.Year + 30; year++)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="MinYear" class="form-label">Min.Year</label>
+                                <select class="form-control" name="input.MinYear" id="MinYear" value="@Model.WorkCandidates.MinYear" oninput="validateWholeNumberInput(this)">
+                                    <option value="">Select</option>
+                                    @for (int year = DateTime.Now.Year; year <= DateTime.Now.Year + 30; year++)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="MaxYear" class="form-label">Max.Year</label>
+                                <select class="form-control" name="input.MaxYear" id="MaxYear" value="@Model.WorkCandidates.MaxYear" oninput="validateWholeNumberInput(this)">
+                                    <option value="">Select</option>
+                                    @for (int year = DateTime.Now.Year; year <= DateTime.Now.Year + 30; year++)
+                                    {
+                                        <option value="@year">@year</option>
+                                    }
+                                </select>
+                            </div>
+
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="BPN" class="form-label">BPN</label>
+                                <select class="form-control" name="input.BPN" id="BPN" value="@Model.WorkCandidates.BPN">
+                                </select>
+                            </div>
+
+                           
+
+                            @if (@Model.WorkCandidateId != null)
+                            {
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="input1" class="form-label">Predicted Scaled Benefit</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" name="input.Predicted_Scaled_Benefit" id="Predicted_Scaled_Benefit" value="@Model.WorkCandidates.Predicted_Scaled_Benefit" disabled>
+                                    </div>
+
+                                </div>
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="input1" class="form-label">Total Score</label>
+                                    <input type="text" class="form-control" name="input.Total_Score" id="Total_Score" value="@(Model.WorkCandidates.Total_Score?.ToString("0.00") ?? "")" disabled>
+                                </div>
+                            }
+
+
+                        </div>
+
+                </div>
+                <div id="tabs-safety">
+                    <div class="row mb-3">
+                    <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Excess_Safety_Value" class="form-label">
+                                    Excess Safety Value (Crash rate/mil VMT)
+                                </label>
+                                <input type="text" class="form-control" name="input.Excess_Safety_Value" id="Excess_Safety_Value" value="@Model.WorkCandidates.Excess_Safety_Value" oninput="validateDecimalInput(this)">
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="Degree_of_Safety_Improvement" class="form-label">Degree of Safety Improvement</label>
+
+                                <select class="form-control" name="input.Degree_of_Safety_Improvement" id="Degree_of_Safety_Improvement" value="@Model.WorkCandidates.Degree_of_Safety_Improvement">
+                                <option value="">Select</option>
+                                <option value="2">Large</option>
+                                <option value="1">Small</option>
+                                <option value="0">None</option>
+                                </select>
+                       
+                    </div>
+                    
+                    <div class="col-lg-1 col-md-3 mb-5">
+                         <label for="HSIP_Eligible" class="form-label">HSIP Eligible</label>
+                        
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.HSIP_Eligible" id="HSIP_Eligible" value="1" @(Model.WorkCandidates.HSIP_Eligible == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.HSIP_Eligible" id="HSIP_Eligible" value="0" @(Model.WorkCandidates.HSIP_Eligible == 0 ? "checked" : "") @(Model.WorkCandidates.HSIP_Eligible == null ? "checked" : "")> No
+                                </label>
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="Supports_Hazard_Mitigation" class="form-label">Supports Hazard Mitigation</label>
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Supports_Hazard_Mitigation" id="Supports_Hazard_Mitigation" value="1" @(Model.WorkCandidates.Supports_Hazard_Mitigation == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Supports_Hazard_Mitigation" id="Supports_Hazard_Mitigation" value="0" @(Model.WorkCandidates.Supports_Hazard_Mitigation == 0 ? "checked" : "") @(Model.WorkCandidates.Supports_Hazard_Mitigation == null ? "checked" : "")> No
+                                </label>
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                        <label for="Improves_Access_to_Emergency_Services" class="form-label">Improves Access to Emergency Services</label>
+                             
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Improves_Access_to_Emergency_Services" id="Improves_Access_to_Emergency_Services" value="1" @(Model.WorkCandidates.Improves_Access_to_Emergency_Services == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Improves_Access_to_Emergency_Services" id="Improves_Access_to_Emergency_Services" value="0" @(Model.WorkCandidates.Improves_Access_to_Emergency_Services == 0 ? "checked" : "") @(Model.WorkCandidates.Improves_Access_to_Emergency_Services == null ? "checked" : "")> No
+                                </label>
+                    </div>
+                    <div class="col-lg-2 col-md-3 mb-5">
+                         <label for="Supported_by_RSA_Safety_Study" class="form-label">Supported by RSA Safety Study</label>
+                              
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Supported_by_RSA_Safety_Study" id="Supported_by_RSA_Safety_Study" value="1" @(Model.WorkCandidates.Supported_by_RSA_Safety_Study == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Supported_by_RSA_Safety_Study" id="Supported_by_RSA_Safety_Study" value="0" @(Model.WorkCandidates.HSIP_Eligible == 0 ? "checked" : "") @(Model.WorkCandidates.Supported_by_RSA_Safety_Study == null ? "checked" : "")> No
+                                </label>
+                    </div>
+                     @if (@Model.WorkCandidateId != null)
+                            {
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Predicted_Safety_Benefit" class="form-label">Predicted Safety Benefit</label>
+
+                                    <div class="input-group"> 
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" name="input.Predicted_Safety_Benefit" id="Predicted_Safety_Benefit" value="@Model.WorkCandidates.Predicted_Safety_Benefit" readonly disabled>
+                                    </div>
+
+                                </div>
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Safety_Score" class="form-label">Safety Score</label>
+                                    <input type="text" class="form-control" name="input.Safety_Score" id="Safety_Score" value="@(Model.WorkCandidates.Safety_Score?.ToString("0.00") ?? "")" disabled>
+                                </div>
+                            }
+                        </div>
+                </div>
+                <div id="tabs-mobility">
+                        <div class="row mb-3">
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Travel_Time_Savings" class="form-label">
+                                    Travel Time Savings(Hours/Year)
+                                </label>
+                                <input type="text" class="form-control" name="input.Travel_Time_Savings" id="Travel_Time_Savings" value="@Model.WorkCandidates.Travel_Time_Savings" oninput="validateWholeNumberInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Operating_Cost_Savings" class="form-label">
+                                    Operating Cost Savings($/Year)
+                                </label>
+                                
+                                <div class="input-group">
+                                    <span class="input-group-text">$</span>
+                                    <input type="text" class="form-control" name="input.Operating_Cost_Savings" id="Predicted_Operating_Cost_SavingsSafety_Benefit" value="@Model.WorkCandidates.Operating_Cost_Savings" oninput="validateDecimalInput(this)">
+                                </div>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Degree_of_Mobility_Improvement" class="form-label">Degree of Mobility Improvement</label>
+                                <select class="form-control" name="input.Degree_of_Mobility_Improvement" id="Degree_of_Mobility_Improvement" value="">
+                                    <option value="">Select</option>
+                                    <option value="2">Large</option>
+                                    <option value="1">Small</option>
+                                    <option value="0">None</option>
+                                    </select>
+                            </div>
+                          
+
+                           
+
+
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Freight_Improvement" class="form-label">Freight Improvement</label>
+                                
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Freight_Improvement" id="Freight_Improvement" value="1" @(Model.WorkCandidates.Freight_Improvement == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Freight_Improvement" id="Freight_Improvement" value="0" @(Model.WorkCandidates.Freight_Improvement == 0 ? "checked" : "") @(Model.WorkCandidates.Freight_Improvement == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Facilitates_Transit_Use" class="form-label">Facilitates Transit Use</label>
+                               
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Facilitates_Transit_Use" id="Facilitates_Transit_Use" value="1" @(Model.WorkCandidates.Facilitates_Transit_Use == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Facilitates_Transit_Use" id="Facilitates_Transit_Use" value="0" @(Model.WorkCandidates.Facilitates_Transit_Use == 0 ? "checked" : "") @(Model.WorkCandidates.Facilitates_Transit_Use == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Facilitates_Active_Transportation" class="form-label">Facilitates Active Transportation</label>
+                               
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Facilitates_Active_Transportation" id="Facilitates_Active_Transportation" value="1" @(Model.WorkCandidates.Facilitates_Active_Transportation == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Facilitates_Active_Transportation" id="Facilitates_Active_Transportation" value="0" @(Model.WorkCandidates.Facilitates_Active_Transportation == 0 ? "checked" : "") @(Model.WorkCandidates.Facilitates_Active_Transportation == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Bike_Lanes_Constructed" class="form-label">Bike Lanes Constructed(Feet)</label>
+                                <input type="text" class="form-control" name="input.Bike_Lanes_Constructed" id="Bike_Lanes_Constructed" value="@Model.WorkCandidates.Bike_Lanes_Constructed" oninput="validateWholeNumberInput(this)">
+                            </div>
+                           
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Support_for_Job_Growth" class="form-label">Support for Job Growth</label>
+                                
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Job_Growth" id="Support_for_Job_Growth" value="1" @(Model.WorkCandidates.Support_for_Job_Growth == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Job_Growth" id="Support_for_Job_Growth" value="0" @(Model.WorkCandidates.Support_for_Job_Growth == 0 ? "checked" : "") @(Model.WorkCandidates.Support_for_Job_Growth == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Support_for_Tourism" class="form-label">Support for Tourism</label>
+                                
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Tourism" id="Support_for_Tourism" value="1" @(Model.WorkCandidates.Support_for_Tourism == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Tourism" id="Support_for_Tourism" value="0" @(Model.WorkCandidates.Support_for_Tourism == 0 ? "checked" : "") @(Model.WorkCandidates.Support_for_Tourism == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Support_for_Economic_Goals" class="form-label">Support for Economic Goals</label>
+                               
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Economic_Goals" id="Support_for_Economic_Goals" value="1" @(Model.WorkCandidates.Support_for_Economic_Goals == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Economic_Goals" id="Support_for_Economic_Goals" value="0" @(Model.WorkCandidates.Support_for_Economic_Goals == 0 ? "checked" : "") @(Model.WorkCandidates.Support_for_Economic_Goals == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Support_for_Recreation" class="form-label">Support for Recreation</label>
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Recreation" id="Support_for_Recreation" value="1" @(Model.WorkCandidates.Support_for_Recreation == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Recreation" id="Support_for_Recreation" value="0" @(Model.WorkCandidates.Support_for_Recreation == 0 ? "checked" : "") @(Model.WorkCandidates.Support_for_Recreation == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Consistency_with_Existing_Plans" class="form-label">Consistency with Existing Plans</label>
+                            
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Consistency_with_Existing_Plans" id="Consistency_with_Existing_Plans" value="1" @(Model.WorkCandidates.Consistency_with_Existing_Plans == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Consistency_with_Existing_Plans" id="Consistency_with_Existing_Plans" value="0" @(Model.WorkCandidates.Consistency_with_Existing_Plans == 0 ? "checked" : "") @(Model.WorkCandidates.Consistency_with_Existing_Plans == null ? "checked" : "")> No
+                                </label>
+                            </div>
+
+                             @if (@Model.WorkCandidateId != null)
+                            {
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Predicted_Mobility_Benefit" class="form-label">Mobility and Economy Benefit</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" name="input.Predicted_Mobility_Benefit" id="Predicted_Mobility_Benefit" value="@Model.WorkCandidates.Predicted_Mobility_Benefit" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Mobility_and_Access_Score" class="form-label">Mobility and Access Score</label>
+                                    <input type="text" class="form-control" name="input.Mobility_and_Access_Score" id="Mobility_and_Access_Score" value="@(Model.WorkCandidates.Mobility_and_Access_Score?.ToString("0.00") ?? "")" disabled>
+                                </div>
+                            }
+                        </div>
+
+                </div>
+                <div id="tabs-equity">
+                        <div class="row mb-3">
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Sidewalks_and_Curb_Ramps_Constructed_or_Improved" class="form-label">Sidewalks and Curb Ramps Constructed or Improved(Sq.Ft)</label>
+                                <input type="text" class="form-control" name="input.Sidewalks_and_Curb_Ramps_Constructed_or_Improved" id="Sidewalks_and_Curb_Ramps_Constructed_or_Improved" value="@Model.WorkCandidates.Sidewalks_and_Curb_Ramps_Constructed_or_Improved" oninput="validateWholeNumberInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Change_in_Accessible_Destinations" class="form-label">Change in Accessible Destinations(Number)</label>
+                                <input type="text" class="form-control" name="input.Change_in_Accessible_Destinations" id="Change_in_Accessible_Destinations" value="@Model.WorkCandidates.Change_in_Accessible_Destinations" oninput="validateWholeNumberInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Percent_of_Acessibilty_Improvement_for_Disadvantaged_Populations" class="form-label">Percent of Accessibility Improvement for Disadvantaged Populations(%)</label>
+                                <input type="text" class="form-control" name="input.Percent_of_Acessibilty_Improvement_for_Disadvantaged_Populations" id="Percent_of_Acessibilty_Improvement_for_Disadvantaged_Populations" value="@Model.WorkCandidates.Percent_of_Acessibilty_Improvement_for_Disadvantaged_Populations" oninput="validateWholeNumberInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Support_for_Environmental_Justice" class="form-label">Support for Environmental Justice</label>
+                               
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Environmental_Justice" id="Support_for_Environmental_Justice" value="1" @(Model.WorkCandidates.Support_for_Environmental_Justice == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Support_for_Environmental_Justice" id="Support_for_Environmental_Justice" value="0" @(Model.WorkCandidates.Support_for_Environmental_Justice == 0 ? "checked" : "") @(Model.WorkCandidates.Support_for_Environmental_Justice == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                             @if (@Model.WorkCandidateId != null)
+                            {
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Predicted_Equity_and_Access_Benefit" class="form-label">Equity and Access Benefit</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" name="input.Predicted_Equity_and_Access_Benefit" id="Predicted_Equity_and_Access_Benefit" value="@Model.WorkCandidates.Predicted_Equity_and_Access_Benefit" disabled>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Equity_and_Access_Score" class="form-label">Equity and Access Score</label>
+                                    <input type="text" class="form-control" name="input.Equity_and_Access_Score" id="Equity_and_Access_Score" value="@(Model.WorkCandidates.Equity_and_Access_Score?.ToString("0.00") ?? "")" disabled>
+                                </div>
+
+                            }
+
+                        </div>
+
+                </div>
+                <div id="tabs-resilience">
+                        <div class="row mb-3">
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Reduced_Flood_Closure_Risk" class="form-label">Reduced Flood Closure Risk</label>
+                              
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Reduced_Flood_Closure_Risk" id="Reduced_Flood_Closure_Risk" value="1" @(Model.WorkCandidates.Reduced_Flood_Closure_Risk == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Reduced_Flood_Closure_Risk" id="Reduced_Flood_Closure_Risk" value="0" @(Model.WorkCandidates.Reduced_Flood_Closure_Risk == 0 ? "checked" : "") @(Model.WorkCandidates.Reduced_Flood_Closure_Risk == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Wetlands_Improved" class="form-label">Wetlands Improved(Acres)</label>
+                                <input type="text" class="form-control" name="input.Wetlands_Improved" id="Wetlands_Improved" value="@Model.WorkCandidates.Wetlands_Improved" oninput="validateWholeNumberInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Wildlife_Crossings" class="form-label">Wildlife Crossings(ea)</label>
+                                <input type="text" class="form-control" name="input.Wildlife_Crossings" id="Wildlife_Crossings" value="@Model.WorkCandidates.Wildlife_Crossings" oninput="validateWholeNumberInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Reduced_Fuel_Consumption" class="form-label">Reduced Fuel Consumption(Gallons/Year)</label>
+                                <input type="text" class="form-control" name="input.Reduced_Fuel_Consumption" id="Reduced_Fuel_Consumption" value="@Model.WorkCandidates.Reduced_Fuel_Consumption" oninput="validateWholeNumberInput(this)">
+                            </div>
+
+                    
+
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Predicted_Environmental_Benefit" class="form-label">Degree of Environmental Improvement</label>
+                                <select class="form-control" name="input.Degree_of_Environmental_Improvement" id="Degree_of_Environmental_Improvement" value="@Model.WorkCandidates.Degree_of_Environmental_Improvement">
+                                <option value="">Select</option>
+                                <option value="2">Large</option>
+                                <option value="1">Small</option>
+                                <option value="0">None</option>
+                                </select>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Consistency_with_Land_Use_Plans" class="form-label">Consistency with Land Use Plans</label>
+                              
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Consistency_with_Land_Use_Plans" id="Consistency_with_Land_Use_Plans" value="1" @(Model.WorkCandidates.Consistency_with_Land_Use_Plans == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Consistency_with_Land_Use_Plans" id="Consistency_with_Land_Use_Plans" value="0" @(Model.WorkCandidates.Consistency_with_Land_Use_Plans == 0 ? "checked" : "") @(Model.WorkCandidates.Consistency_with_Land_Use_Plans == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                             @if (@Model.WorkCandidateId != null)
+                            {
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Operating_Cost_Savings" class="form-label">Resilience and Environment Benefit</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" name="" id="" value="" disabled>
+                                    </div>
+                                </div>
+
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Resilience_and_Environment_Score" class="form-label">Resilience and Environment Score</label>
+                                    <input type="text" class="form-control" name="input.Resilience_and_Environment_Score" id="Resilience_and_Environment_Score" value="@(Model.WorkCandidates.Resilience_and_Environment_Score?.ToString("0.00") ?? "")" disabled>
+                                </div>
+                            }
+
+                        </div>
+
+                </div>
+                <div id="tabs-condition">
+                        <div class="row mb-3">
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Pavement_Rehabilitated_or_Reconstructed" class="form-label">Pavement Rehabilitated or Reconstructed(Lane Miles)</label>
+                                <input type="text" class="form-control" name="input.Pavement_Rehabilitated_or_Reconstructed" id="Pavement_Rehabilitated_or_Reconstructed" value="@Model.WorkCandidates.Pavement_Rehabilitated_or_Reconstructed" oninput="validateDecimalInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Bridges_Rehabilitated_or_Replaced" class="form-label">Bridges Rehabilitated or Replaced(Sq.Ft)</label>
+                                <input type="text" class="form-control" name="input.Bridges_Rehabilitated_or_Replaced" id="Bridges_Rehabilitated_or_Replaced" value="@Model.WorkCandidates.Bridges_Rehabilitated_or_Replaced" oninput="validateDecimalInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Culverts_Rehabilitated_or_Replaced" class="form-label">Culverts Rehabilitated or Replaced(ea)</label>
+                                <input type="text" class="form-control" name="input.Culverts_Rehabilitated_or_Replaced" id="Culverts_Rehabilitated_or_Replaced" value="@Model.WorkCandidates.Culverts_Rehabilitated_or_Replaced" oninput="validateDecimalInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Guardrail_Rehabilitated_or_Replaced" class="form-label">Guardrail Rehabilitated or Replaced(Ft)</label>
+                                <input type="text" class="form-control" name="input.Guardrail_Rehabilitated_or_Replaced" id="Guardrail_Rehabilitated_or_Replaced" value="@Model.WorkCandidates.Guardrail_Rehabilitated_or_Replaced" oninput="validateDecimalInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Geotechnical_Assets_Rehabilitated_or_Replaced" class="form-label">Geotechnical Assets Rehabilitated or Replaced(ea)</label>
+                                <input type="text" class="form-control" name="input.Geotechnical_Assets_Rehabilitated_or_Replaced" id="Geotechnical_Assets_Rehabilitated_or_Replaced" value="@Model.WorkCandidates.Geotechnical_Assets_Rehabilitated_or_Replaced" oninput="validateDecimalInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Facilities_Rehabilitated_or_Reconstructed" class="form-label">Facilities Rehabilitated or Reconstructed(Sq.Ft)</label>
+                                <input type="text" class="form-control" name="input.Facilities_Rehabilitated_or_Reconstructed" id="Facilities_Rehabilitated_or_Reconstructed" value="@Model.WorkCandidates.Facilities_Rehabilitated_or_Reconstructed" oninput="validateDecimalInput(this)">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Sidewalks_Rehabilitated_or_Reconstructed" class="form-label">Sidewalks Rehabilitated or Reconstructed(Sq.Ft)</label>
+                                <input type="text" class="form-control" name="input.Sidewalks_Rehabilitated_or_Reconstructed" id="Sidewalks_Rehabilitated_or_Reconstructed" value="@Model.WorkCandidates.Sidewalks_Rehabilitated_or_Reconstructed">
+                            </div>
+                             @if (@Model.WorkCandidateId != null)
+                            {
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Operating_Cost_Savings" class="form-label">Condition and Performance Benefit</label>
+
+                                    <div class="input-group">
+                                        <span class="input-group-text">$</span>
+                                        <input type="text" class="form-control" name="" id="" value="" disabled>
+                                    </div>
+                                </div>
+
+                                <div class="col-lg-2 col-md-3 mb-5">
+                                    <label for="Condition_and_Performance_Score" class="form-label">Condition and Performance Score</label>
+                                    <input type="text" class="form-control" name="input.Condition_and_Performance_Score" id="Condition_and_Performance_Score" value="@(Model.WorkCandidates.Condition_and_Performance_Score?.ToString("0.00") ?? "")" disabled>
+                                </div>
+                            }
+
+                          
+                        </div>
+
+                </div>
+
+
+                @if (@Model.WorkCandidateId != null)
+                {
+                <div id="tabs-other">
+                        <div class="row mb-3">
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Length" class="form-label">Length(Miles)</label>
+                                <input type="text" class="form-control" name="input.Length" id="Length" value="@Model.WorkCandidates.Length" disabled>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="ADT" class="form-label">ADT(Count)</label>
+                                <input type="text" class="form-control" name="input.ADT" id="ADT" value="@Model.WorkCandidates.ADT" disabled>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Percent_Trucks" class="form-label">Percent Trucks(%)</label>
+                                <input type="text" class="form-control" name="input.Percent_Trucks" id="Percent_Trucks" value="@Model.WorkCandidates.Percent_Trucks" disabled>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Population_Density" class="form-label">Population Density(People/Square Mile)</label>
+                                <input type="text" class="form-control" name="input.Population_Density" id="Population_Density" value="@Model.WorkCandidates.Population_Density" disabled>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Bike_Commute_Share" class="form-label">Bike Commute Share(%)</label>
+                                <input type="text" class="form-control" name="input.Bike_Commute_Share" id="Bike_Commute_Share" value="@Model.WorkCandidates.Bike_Commute_Share" disabled>
+                            </div>
+                           
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Functional_Classification" class="form-label">Functional Classification</label>
+                                <input type="text" class="form-control" name="input.Functional_Classification" id="Functional_Classification" value="@Model.WorkCandidates.Functional_Classification" disabled>
+                            </div>
+
+
+
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="National_Highway_System" class="form-label">National Highway System</label>
+                            
+
+                                 <br>
+                                <label>
+                                    <input type="radio" class="" name="input.National_Highway_System" id="National_Highway_System" value="1" @(Model.WorkCandidates.National_Highway_System == 1 ? "checked" : "") disabled> On
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.National_Highway_System" id="National_Highway_System" value="0" @(Model.WorkCandidates.National_Highway_System == 0 ? "checked" : "") disabled @(Model.WorkCandidates.National_Highway_System == null ? "checked" : "")> Off
+                                </label>
+
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Pennsylvania_Byway" class="form-label">Pennsylvania Byway</label>
+                        
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Pennsylvania_Byway" id="Pennsylvania_Byway" value="1" @(Model.WorkCandidates.Pennsylvania_Byway == 1 ? "checked" : "") disabled> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Pennsylvania_Byway" id="Pennsylvania_Byway" value="0" @(Model.WorkCandidates.Pennsylvania_Byway == 0 ? "checked" : "") disabled @(Model.WorkCandidates.Pennsylvania_Byway == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Bicycle_PA_Route" class="form-label">Bicycle PA Route</label>
+                          
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Bicycle_PA_Route" id="Bicycle_PA_Route" disabled value="1" @(Model.WorkCandidates.Bicycle_PA_Route == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Bicycle_PA_Route" id="Bicycle_PA_Route" disabled value="0" @(Model.WorkCandidates.Bicycle_PA_Route == 0 ? "checked" : "") @(Model.WorkCandidates.Bicycle_PA_Route == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Interstate_Emergency_Detour" class="form-label">Interstate Emergency Detour</label>
+                            
+                                 <br>
+                                <label>
+                                    <input type="radio" class="" name="input.Interstate_Emergency_Detour" disabled id="Interstate_Emergency_Detour" value="1" @(Model.WorkCandidates.Interstate_Emergency_Detour == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.Interstate_Emergency_Detour" disabled id="Interstate_Emergency_Detour" value="0" @(Model.WorkCandidates.Interstate_Emergency_Detour == 0 ? "checked" : "") @(Model.WorkCandidates.Interstate_Emergency_Detour == null ? "checked" : "")> No
+                                </label>
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="LFAR_BOF_Eligible" class="form-label">LFAR BOF Eligible</label>
+                      
+
+                                <br>
+                                <label>
+                                    <input type="radio" class="" name="input.LFAR_BOF_Eligible" disabled id="LFAR_BOF_Eligible" value="1" @(Model.WorkCandidates.LFAR_BOF_Eligible == 1 ? "checked" : "")> Yes
+                                </label>
+                                <label>
+                                    <input type="radio" class="" name="input.LFAR_BOF_Eligible" disabled id="LFAR_BOF_Eligible" value="0" @(Model.WorkCandidates.LFAR_BOF_Eligible == 0 ? "checked" : "") @(Model.WorkCandidates.LFAR_BOF_Eligible == null ? "checked" : "")> No
+                                </label>
+                            </div>
+
+
+
+
+                           
+                         
+                          
+                           
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Speed_Limit" class="form-label">Speed Limit(MPH)</label>
+                                <input type="text" class="form-control" name="input.Speed_Limit" disabled id="Speed_Limit" value="@Model.WorkCandidates.Speed_Limit">
+                            </div>
+                            <div class="col-lg-2 col-md-3 mb-5">
+                                <label for="Detour_Distance" class="form-label">Detour Distance(mi)</label>
+                                <input type="text" class="form-control" name="input.Detour_Distance" disabled id="Detour_Distance" value="@Model.WorkCandidates.Detour_Distance">
+                            </div>
+                           
+                        </div>
+
+                </div>
+                }
+               
+                    
+              
+            </div>
+                <div class="col-md-2 mt-3 d-flex">
+                    <button type="button" class="btn btn-secondary" style="background-color:#009966 ;color:#fff;opacity: 50%;">Cancel</button>
+                    <button type="submit" class="btn btn-primary" style="margin-left: 10px;">Submit</button>
+                </div>
+            </form>
+           
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-label {
+        height: 40px;
+    }
+
+    .card-body, .card, .ui-widget-content {
+        border: none !important;
+    }
+
+    select {
+        appearance: auto !important;
+    }
+
+    .ui-tabs .ui-tabs-nav{
+
+    }
+
+    /*
+    div.ui-tabs-panel{
+        border: 1px solid #000 !important;
+        border-radius: 20px;
+        margin-bottom: 20px;
+        margin-top:2px;
+    }   
+
+    .ui-state-active, .ui-tabs .ui-tabs-nav li {
+        border:none !important;
+        background:none !important;
+        margin:0px !important;
+    }
+
+    .ui-widget-header{
+        border:none !important;
+        background:none !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.ui-tabs-active{
+        padding-bottom:0px;
+        font-weight:bold;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-general'] {
+        background-color: #606E8C;
+        border: 1px solid #606E8C;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-extras'] {
+        background-color: #606E8C;
+        border: 1px solid #606E8C;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-safety'] {
+        background-color: #C7DBEC;
+        border: 1px solid #C7DBEC;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-condition'] {
+        background-color: #FADF81;
+        border: 1px solid #FADF81;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-mobility'] {
+        background-color: #97A4BB;
+        border: 1px solid #97A4BB;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-equity'] {
+        background-color: #B4C8EE;
+        border: 1px solid #B4C8EE;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-resilience'] {
+        background-color: #9D9BCF;
+        border: 1px solid #9D9BCF;
+    }
+
+    .ui-tabs .ui-tabs-nav li a[href='#tabs-other'] {
+        background-color: #8173AB;
+        border: 1px solid #8173AB;
+    }
+
+    
+   
+
+    .ui-tabs .ui-tabs-nav li.tabs-general-active.ui-tabs-active a {
+        background-color: #1c305c;
+        border: 1px solid #1c305c;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-extras-active.ui-tabs-active a {
+        background-color: #1c305c;
+        border: 1px solid #1c305c;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-safety-active.ui-tabs-active a {
+        background-color: #a2c4e0;
+        border: 1px solid #a2c4e0;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-condition-active.ui-tabs-active a {
+        background-color: #f7cb2d;
+        border: 1px solid #f7cb2d !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-mobility-active.ui-tabs-active a {
+        background-color: #52688f;
+        border: 1px solid #52688f !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-equity-active.ui-tabs-active a {
+        background-color: #82a4e3;
+        border: 1px solid #82a4e3 !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-resilience-active.ui-tabs-active a {
+        background-color: #5d59af;
+        border: 1px solid #5d59af !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-other-active.ui-tabs-active a {
+        background-color: #2d1674;
+        border: 1px solid #2d1674 !important;
+    }
+
+    .ui-tabs-nav li a{
+        border-radius:20px;
+        color:#fff !important;
+    }
+    */
+
+    .ui-tabs .ui-tabs-nav li.general-li {
+        background-color: rgba(0, 51, 153, 0.5) !important;
+        border: 1px solid rgba(0, 51, 153, 0.5) !important;
+        /*border-top-left-radius: 20px; 
+        border-bottom-left-radius: 20px; */
+    }
+
+    .ui-tabs .ui-tabs-nav li.general-li a{
+        color: #fff !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-general-active.ui-tabs-active {
+        background-color: #003399 !important;
+        border: 1px solid #003399 !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.safety-li {
+        background-color: rgba(0, 51, 204, 0.5) !important;
+        border: 1px solid rgba(0, 51, 204, 0.5) !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.safety-li a {
+        color: #fff !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-safety-active.ui-tabs-active {
+        background-color: #0033CC !important;
+        border: 1px solid #0033CC !important;
+    }
+
+
+
+
+    .ui-tabs .ui-tabs-nav li.mobility-li {
+        background-color: rgba(0, 102, 153, 0.5) !important;
+        border: 1px solid rgba(0, 102, 153, 0.5) !important;
+    }
+
+        .ui-tabs .ui-tabs-nav li.mobility-li a {
+        color: #fff !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.tabs-mobility-active.ui-tabs-active {
+        background-color: #006699 !important;
+        border: 1px solid #006699 !important;
+    }
+
+
+
+
+
+
+    .ui-tabs .ui-tabs-nav li.equity-li {
+        background-color: rgba(51, 102, 153, 0.5) !important;
+        border: 1px solid rgba(51, 102, 153, 0.5) !important;
+    }
+
+        .ui-tabs .ui-tabs-nav li.equity-li a {
+            color: #fff !important;
+        }
+
+    .ui-tabs .ui-tabs-nav li.tabs-equity-active.ui-tabs-active {
+        background-color: #336699 !important;
+        border: 1px solid #336699 !important;
+    }
+
+
+
+    .ui-tabs .ui-tabs-nav li.resilience-li {
+        background-color: rgba(51, 153, 153, 0.5) !important;
+        border: 1px solid rgba(51, 153, 153, 0.5) !important;
+    }
+
+        .ui-tabs .ui-tabs-nav li.resilience-li a {
+            color: #fff !important;
+        }
+
+
+    .ui-tabs .ui-tabs-nav li.tabs-resilience-active.ui-tabs-active {
+        background-color: #339999 !important;
+        border: 1px solid #339999 !important;
+    }
+
+
+
+    .ui-tabs .ui-tabs-nav li.condition-li {
+        background-color: rgba(51, 204, 153, 0.5) !important;
+        border: 1px solid rgba(51, 204, 153, 0.5) !important;
+    }
+
+        .ui-tabs .ui-tabs-nav li.condition-li a {
+            color: #fff !important;
+        }
+
+    .ui-tabs .ui-tabs-nav li.tabs-condition-active.ui-tabs-active {
+        background-color: #33CC99 !important;
+        border: 1px solid #33CC99 !important;
+    }
+
+
+    .ui-tabs .ui-tabs-nav li.other-li {
+        background-color: rgba(102, 204, 153, 0.5) !important;
+        border: 1px solid rgba(102, 204, 153, 0.5) !important;
+    }
+
+        .ui-tabs .ui-tabs-nav li.other-li a {
+            color: #fff !important;
+        }
+
+
+    .ui-tabs .ui-tabs-nav li.tabs-other-active.ui-tabs-active{
+        background-color: #66CC99 !important;
+        border: 1px solid #66CC99 !important;
+    }
+
+    div.ui-tabs-panel {
+        border: 1px solid #000 !important;
+        /*border-radius: 20px;*/
+        margin-top: 2px;
+    }
+
+
+
+    
+    #tabs{
+        background: #89898d;
+        border-radius: 15px;
+    }
+
+    .ui-tabs .ui-tabs-panel{
+        background:#fff;
+    }
+
+    .ui-widget-header {
+        border: none !important;
+        background: #89898d;
+        padding-top: 20px !important;
+    }
+
+    .ui-tabs .ui-tabs-nav li.ui-tabs-active {
+        padding-bottom: 0px;
+        background: #75caca;
+        font-weight: bold;
+    }
+
+    .ui-tabs .ui-tabs-nav li:before {
+        /*content: "";
+        position: absolute;
+        margin: -20px;
+        width: 40px;
+        height: 40px;
+        transform: rotate(45deg);
+        background-color: black;*/
+        /*box-shadow: 0 0 0 250px #522d5b;*/
+
+    }
+
+    .ui-tabs .ui-tabs-nav li{
+    /*overflow: hidden;*/
+        border: none !important;
+        /*clip-path: polygon( 8% 20%, 10% 0%, 90% 0, 100% 100%, 100% 100%, 90% 100%, 10% 100%, 0% 100% )*/
+    }
+
+    .ui-tabs .ui-tabs-nav li a{
+        margin-left:20px;
+            margin-right: 20px;
+            font-size:15px;
+    }
+    div:before {
+        
+    }
+    
+</style>
+
+<script>
+    function validateWholeNumberInput(input) {
+        input.value = input.value.replace(/\D/g, '');
+    }
+
+    function validateDecimalInput(input) {
+        input.value = input.value.replace(/[^0-9.]/g, '');
+        input.value = input.value.replace(/(\..*)\./g, '$1');
+        input.value = input.value.replace(/^(\d+)\.(\d{2}).*$/, '$1.$2');
+    }
+
+
+    $(document).on("change", "#AssetType", function () {
+        if($(this).val() == "B"){
+            $(".BRIDGE_ID").show();
+            $(".BRKEY").show();
+        }else if($(this).val() == ""){
+            $(".BRIDGE_ID").hide();
+            $(".BRKEY").hide();
+        }else{
+            $(".BRIDGE_ID").hide();
+            $(".BRKEY").hide();
+        }
+    });
+    $("#AssetType").trigger("change");
+
+
+    $(document).on("change", "#District", function () {
+
+        $("#Cnty").html("<option value=''>Select</option>");
+        $("#Route").html("<option value=''>Select</option>");
+
+        $.ajax({
+            url: '/WorkCandidates/Create?handler=GetCounties&id=' + $(this).val(),
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log('Data:', data);
+                $.each(data, function (key, value) {
+
+                    if ('@Model.WorkCandidates.Cnty' == value.cnty) {
+                        $("#Cnty").append("<option value='" + value.cnty + "' selected>" + value.countyName + "</option>");
+                        $("#Cnty").trigger("change");
+                    }
+                    else
+                        $("#Cnty").append("<option value='" + value.cnty + "'>" + value.countyName + "</option>");
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error :', error);
+            }
+        });
+    });
+    $("#District").trigger("change");
+
+
+    $(document).on("change", "#Cnty", function () {
+        $("#Route").html("<option value=''>Select</option>");
+
+        $.ajax({
+            url: '/WorkCandidates/Create?handler=GetRoutes&Countyid=' + $(this).val() + "&Districtid=" + $("#District").val(),
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log('Data:', data);
+                $.each(data, function (key, value) {    
+                    if ('@Model.WorkCandidates.Route' == value.rte) {
+                        $("#Route").append("<option value='" + value.rte + "' selected>" + value.rte + "</option>");
+                        $("#Route").trigger("change");
+                    }else{
+                        $("#Route").append("<option value='" + value.rte + "'>" + value.rte + "</option>");
+                    }
+                    
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error :', error);
+            }
+        });
+    });
+    
+    
+    $.ajax({
+        url: '/WorkCandidates/Create?handler=GetBPN',
+        type: 'GET',
+        dataType: 'json',
+        success: function (data) {
+            console.log('Data:', data);
+
+            $("#BPN").html("<option value=''>Select</option>");
+            $.each(data, function (key, value) {
+                if ('@Model.WorkCandidates.BPN' == value.code) {
+                    $("#BPN").append("<option value='" + value.code + "' selected>" + value.longDescription + "</option>");
+                }else{
+                    $("#BPN").append("<option value='" + value.code + "'>" + value.longDescription + "</option>");
+                }
+            });
+        },
+        error: function (xhr, status, error) {
+            console.error('Error :', error);
+        }
+    });
+
+
+    $(document).on("change", "#Route", function () {
+        $("#Section").html("<option value=''>Select</option>");
+
+        $.ajax({
+            url: '/WorkCandidates/Create?handler=GetSectionPairs&Countyid=' + $("#Cnty").val() + "&Districtid=" + $("#District").val() + "&Route=" + $(this).val(),
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log('Data:', data);
+                $.each(data, function (key, value) {
+                    if ('@Model.WorkCandidates.FromSection' == value.fromSection && '@Model.WorkCandidates.ToSection' == value.toSection) {
+                        $("#Section").append("<option value='" + value.fromTo + "' selected>" + value.fromTo + "</option>");
+                    }else{
+                        $("#Section").append("<option value='" + value.fromTo + "'>" + value.fromTo + "</option>");
+                    }
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error :', error);
+            }
+        });
+
+        $.ajax({
+            url: '/WorkCandidates/Create?handler=GetBrkeyAndBMSID&Countyid=' + $("#Cnty").val() + "&Districtid=" + $("#District").val() + "&Route=" + $(this).val(),
+            type: 'GET',
+            dataType: 'json',
+            success: function (data) {
+                console.log('Data:', data);
+                $("#BRKEY").html("<option value=''>Select</option>");
+                $.each(data, function (key, value) {
+                    $("#BRKEY").append("<option bmsid='" + value.bmsid + "' value='" + value.brkey + "'>" + value.brkey + "</option>");
+                });
+            },
+            error: function (xhr, status, error) {
+                console.error('Error :', error);
+            }
+        });
+    });
+
+    $(document).on("change", "#BRKEY", function () {
+        $("#BRIDGE_ID").val($(this).find('option:selected').attr('bmsid'));
+    });
+
+
+    $("#Degree_of_Safety_Improvement").val(@Model.WorkCandidates.Degree_of_Safety_Improvement);
+    $("#Degree_of_Mobility_Improvement").val(@Model.WorkCandidates.Degree_of_Mobility_Improvement);
+    $("#Degree_of_Environmental_Improvement").val(@Model.WorkCandidates.Degree_of_Environmental_Improvement);
+    $("#Year").val(@Model.WorkCandidates.Year);
+    $("#MinYear").val(@Model.WorkCandidates.MinYear);
+    $("#MaxYear").val(@Model.WorkCandidates.MaxYear);
+
+</script>

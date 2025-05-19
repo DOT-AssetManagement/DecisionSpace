@@ -1,0 +1,75 @@
+﻿@page
+@model DSS.Web.Pages.SetUp.AssetTypeparameter.ListModel
+@{
+    ViewData["Title"] = "Asset Type Parameters Data List";
+
+}
+@{
+    Layout = "Shared/AdminLayout";
+    ViewData["Menu"] = "DSSAdminMenus.Setup";
+    ViewData["SubMenu"] = "AssetTypeparameter";
+}
+<head>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <style>
+        .card {
+            margin-top: 20px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+    </style>
+</head>
+<div class="mt-3" style="margin-left:2%">
+    <h1>Asset Type Parameter</h1>
+  
+</div>
+<div class="card">
+    <div class="card-body">
+      
+        <table id="assettbl" class="table table-bordered table-striped" style="width:100%">
+            <thead>
+                <tr>
+                    <th>AssetType</th>
+                    <th>BenefitScalingFactor</th>
+                    <th>Created By</th>
+                    <th>Created At</th>
+                    <th>Scenario</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var viewModel in Model.AssetTypeParameterViewModels)
+                {
+                    <tr>
+                        <td>@viewModel.AssetTypeParameter.AssetType</td>
+                        <td>@viewModel.AssetTypeParameter.BenefitScalingFactor</td>
+                        <td>@viewModel.AssetTypeParameter.CreatedBy</td>
+                        <td>@viewModel.AssetTypeParameter.CreatedAt</td>
+                        <td>@viewModel.ScenarioName</td>
+                        <td>
+                            <div class="btn-group" role="group">
+                                <a href="/SetUp/AssetTypeparameter/Edit?id=@viewModel.AssetTypeParameter.Id" class="btn btn-sm btn-primary">Edit</a>
+                                <form method="post" asp-page-handler="DeleteAsset" asp-route-id="@viewModel.AssetTypeParameter.Id">
+                                    <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+<a style="margin-left:2%;margin-bottom:1%" class="btn btn-primary mt-3" href="/SetUp/AssetTypeparameter/Create">Add Asset Type Parameter </a>
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<script>
+    $(document).ready(function() {
+        $('#assettbl').DataTable();
+    });
+</script>

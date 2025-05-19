@@ -1,0 +1,337 @@
+﻿@page
+@model DSS.Web.Pages.Scenarios.IndexModel
+@{
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Scenarios";
+}
+
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Scenarios</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item active">Scenarios</li>
+    </ol>
+    <div class="card mb-4">
+        <div class="card-body">
+
+<div class="">
+    <div class="row">
+        <div class="col-md-6">
+            <label>Search in Scenarios</label>
+            <form>
+                <div class="">
+                    <i class="fa-solid fa-magnifying-glass"></i>
+                    <input type="text" name="SearchString" value="@Model.SearchString">
+                    <button type="submit" class="btn btn-primary m-1">Search</button>
+                                <a class="btn btn-warning m-1" style="background-color:#009966 ;color:#fff;opacity: 50%;" href="/Scenarios">Reset</a>
+                </div>
+                            
+
+            </form>
+        </div>
+        <div class="col-md-6 justify-content-end">
+            <a id="createnewscenario" role="button" class="btn btn-primary m-3" href="/Scenarios/CreateScenario" style="float:right;">
+                <span>Create New Scenario</span>
+            </a>
+            
+        </div>
+    </div>
+
+    <div class="NewClass" style="">
+        <div class="card">
+            <div class="card-body">
+                <div class="table-responsive">
+                                <div id="scenariosTable" class="">
+             
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+
+
+
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="exportScenario" tabindex="-1" role="dialog" aria-labelledby="editlibraryheader"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editlibraryheader">Export Scenario</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <form id="" method="post" asp-page-handler="Export">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Scenario Name</label>
+                        <input type="text" name="Name" id="Name" class="form-control" required readonly />
+                        <input type="hidden" name="poolId" id="poolId" class="form-control" required readonly />
+                    </div>
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Relative efficiency threshold</label>
+                        <input name="effThreshold" id="effThreshold" type="text" class="form-control" required />
+                    </div>
+                    <div class="mb-3 d-none">
+                        <label for="Description" class="form-label">Download Path</label>
+                        <input name="xlsxFilePath" type="text" class="form-control" />
+                    </div>                    
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Export</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="projectModal" tabindex="-1" role="dialog" aria-labelledby="editlibraryheader"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editlibraryheader">Export Projects</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+           
+                <div class="modal-body">
+                <table id="projectsTable" width="100%">
+
+                        </table>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                </div>
+          
+        </div>
+    </div>
+</div>
+
+
+
+
+ @{
+    var tableData = new List<object>();
+
+    foreach (var scenario in Model.Scenarios)
+    {
+        tableData.Add(new { ScenarioId = scenario.Id, PoolName = scenario.PoolName, ScenarioName = scenario.ScenName, CreatedBy = scenario.CreatedBy, CreatedAt = scenario.CreatedAt?.ToString("yyyy-MM-dd"), LastModificationAt = scenario.LastModificationTime?.ToString("yyyy-MM-dd"), PoolId = scenario.PoolId });
+    }
+
+
+    var jsonTableData = System.Text.Json.JsonSerializer.Serialize(tableData);
+}
+<script>
+    var tableData = @Html.Raw(jsonTableData);
+
+    $(document).on("submit", "#", function (e) {   
+        e.preventDefault();
+        $.ajax({
+            url: '/Scenarios?handler=Projects&poolId=' + $("#poolId").val() + '&effThreshold=' + $("#effThreshold").val(),
+            method: "GET", 
+            dataType: "json",
+            success: function (response) {
+                var projects = JSON.parse(response);
+                
+                var tableBody = $("#projectsTable tbody");
+                tableBody.empty(); 
+                projects.forEach(function (project) {
+                    var row = "<tr>" +
+                        "<td>" + project.Cnty + "</td>" +
+                        "<td>" + project.Cost + "</td>" +
+                        "<td>" + project.Description + "</td>" +
+                        "</tr>";
+                    tableBody.append(row);
+                });
+
+                $.each(projects, function (id, val) {
+                    console.log(val);
+                });           
+
+                $("#projectModal").modal("show");
+            }
+        });
+    });
+</script>
+<script>
+
+     
+
+
+    function dropdownMenuFormatter(cell, formatterParams, onRendered) {
+        var dropdownHTML = `
+            <div class="dropdown">
+                <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                    <i context-menu="" class="fa-solid fa-ellipsis-vertical"></i>
+                </button>
+            </div>
+        `;
+        return dropdownHTML;
+    }
+
+
+    $(document).ready(function () {
+
+        var cellContextMenu = [
+            {
+                label: '<i class="fa-solid fa-chart-column"></i> Run',
+                action: function (e, cell) {
+                    c = confirm("Do you want to run the scenario?");
+                    console.log(cell);
+                    if(c)
+                        window.location.href = '/Scenarios/Index?handler=RunScenario&id=' + cell.getData().ScenarioId
+                }
+            },
+            {
+                label: '<i class="fa-solid fa-gear"></i> Configuration',
+                action: function (e, cell) {
+                    window.location.href = '/Pools/PoolScoreParameters?poolId=' + cell.getData().PoolId
+                }
+            },
+            {
+                label: '<i class="fa-regular fa-trash-can"></i> Delete',
+                action: function (e, cell) {
+
+                }
+            },
+            {
+                label: '<i class="fa-solid fa-file-import"></i> Import Configuration',
+                action: function (e, cell) {
+                    window.location.href = '/Pools/PoolScoreParameters?poolId='+ cell.getData().PoolId+'&import=true';
+                }
+            },
+            {
+                label: '<i class="fa-solid fa-file-import"></i> Import Work Candidates',
+                action: function (e, cell) {
+                    window.location.href = '/Pools/Index?poolId=' + cell.getData().PoolId + '&import=true';
+                }
+            },
+            {
+                label: '<i class="fa-solid fa-file-export"></i> Export',
+                action: function (e, cell) {
+                    $("#Name").val(cell.getData().ScenarioName);
+                    $("#poolId").val(cell.getData().PoolId);
+                    $("#exportScenario").modal("show");
+                }
+            },
+            {
+                label: '<i class="fa-solid fa-arrow-up-from-bracket"></i> Output',
+                action: function (e, cell) {
+                    var scenarioId = cell.getData().ScenarioId;
+                    if (scenarioId) {
+                        window.location.href = 'Outputs/Maps?scenarioId=' + scenarioId + '&import=true';
+                    } else {
+                        console.error("ScenarioId not available.");
+                    }
+                }
+            },
+
+            {
+                label: '<i class="fa-solid fa-user-tie"></i> Candidates',
+                action: function (e, cell) {
+                            window.location.href = '/Pools/Index?poolId='+ cell.getData().PoolId;
+                }
+            },
+        ];
+
+
+      
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            columns.forEach(column => {
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        e.stopPropagation();
+
+                        column.toggle();
+
+                        // Change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+
+                        // Rebuild the menu to reflect changes
+                        column.getTable().redraw(true);
+                    }
+                });
+            });
+
+            return menu;
+        };
+
+
+        var table = new Tabulator("#scenariosTable", {
+            
+            layout: "fitDataFill",
+            data: tableData,
+            pagination: "local",
+            paginationSize: 6,
+            paginationSizeSelector: [3, 6, 8, 10],
+            movableColumns: true,
+            paginationCounter: "rows",
+            height:"500px",
+            columns: [
+                //{ title: "ID", field: "ID", width: 100, headerMenu: headerMenu },
+                { title: "Scenario Name", field: "ScenarioName", width: "25%", headerMenu: headerMenu },
+                { title: "Pool Name", field: "PoolName", width: "25%", headerMenu: headerMenu },
+                //{ title: "Created By", field: "CreatedBy", width: 300, headerMenu: headerMenu },
+                { title: "Created At", field: "CreatedAt", width: "20%", headerMenu: headerMenu },
+                { title: "Last Modification At", field: "LastModificationAt", width: "20%", headerMenu: headerMenu },
+                { title: "Actions", field: "Actions", width: "10%", frozen: true, formatter: dropdownMenuFormatter, clickMenu: cellContextMenu },
+            ],
+            rowFormatter: function (row) {
+                // Apply custom formatting to rows if needed
+            }
+        });
+    });
+
+    
+</script>
+
+<script>
+  
+</script>

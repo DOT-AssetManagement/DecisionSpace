@@ -1,0 +1,245 @@
+﻿@page
+ @using DSS.Permissions
+@using Volo.Abp.Authorization.Permissions
+@inject IPermissionChecker PermissionChecker
+@model DSS.Web.Pages.DashboardModel
+@{
+    Layout = "Shared/Layout";
+}
+@{
+    var Dashboard = await PermissionChecker.IsGrantedAsync(DSSPermissions.TopBarPermissions.Dashboard);
+    var CandidatePoolsPage = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Default);
+    var OutPutsPage = await PermissionChecker.IsGrantedAsync(DSSPermissions.TopBarPermissions.Outputs);
+}
+
+ @{
+    if (User.IsInRole("Operator"))
+    {
+        Layout = "Shared/TopBarLayout";
+    }
+}  
+
+
+@section styles {
+    <abp-style src="/Pages/Dashbaord.css" />
+}
+
+<div class="container @(Dashboard?"":"d-none")">
+
+        <div class="row justify-content-center d-none">
+            <div class="col-md-6 mb-4">
+                <div class="card border-card">
+                    <div class="card-body" id="card-1">
+                        <a href="/Pools" style="text-decoration: none;">
+                            <h1>DecisionSpace</h1>
+                            <p class="card-1">Analysis tool to support and automate <br />the process of selecting...</p>
+                            <h1 style="margin-top:50px">MORE</h1>
+                        </a>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card borderless-card">
+                    <div class="card-body d-flex card-body-image justify-content-center align-items-center">
+                        <img class="image" src="/images/square1.jpeg" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card  border-card">
+                    <div class="card-body" id="card-2">
+                        <a href="/Outputs/Maps" style="text-decoration: none;">
+                            <h1 style="font-size: 25px;">Charts & Reports</h1>
+                            <img class="mt-5" src="~/images/ProjectEfficiencyAndCost.png" width="100%" />
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+        <div class="row justify-content-center d-none">
+            <div class="col-md-3 mb-4">
+                <div class="card  border-card" >
+                    <div class="card-body d-flex justify-content-center align-items-center" style="background-color: rgba(65, 105, 225, 0.8);">
+                        <p style="color:white; font-weight: bold">
+                            ProjectBuilder is an open source system developed by Spy Pond Partners, LLC for PennDOT.
+                        </p>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card borderless-card">
+                    <div class="card-body card-body-image d-flex justify-content-center align-items-center">
+                        <img class="image" src="/images/square2.jpeg" />
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card  border-card">
+                    <div class="card-body" style="background-color: #9db4fccc;">
+                        <a href="https://dsstest.pbweb.info/Scenarios" target="_blank" style="text-decoration: none;color:rgba(65, 105, 225, 0.8) !important;">
+                            <h1 style="color:rgba(65, 105, 225, 0.8)">PROJECT BUILDER</h1>
+                            <p style="color:rgba(65, 105, 225, 0.8)">
+                               
+                            </p>
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-md-3 mb-4">
+                <div class="card borderless-card">
+                    <div class="card-body card-body-image d-flex justify-content-center align-items-center">
+                        <img class="image" src="/images/square3.jpeg" />
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row" style="margin-top:-80px">
+            <div class="col-md-9">
+                <div class="row mb-4">
+                    <div class="col-md-8">
+                        <div class="card border-card">
+                            <div class="card-body" id="card-1">
+                            <a href="/Pools" style="@(CandidatePoolsPage ? "text-decoration: none" : "pointer-events: none; cursor: not-allowed;text-decoration: none")">
+                                <h1>DecisionSpace</h1>
+                                <p class="card-1">Analysis tool to support and automate <br />the process of selecting...</p>
+                                <h4 style="margin-top:50px;text-align:center;color:#fff;">Click for more</h4>
+                            </a>
+
+
+
+
+
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="card borderless-card">
+                            <div class="card-body d-flex card-body-image justify-content-center align-items-center">
+                                <img class="image" src="/images/square1.jpeg" />
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mb-4">
+                    <div class="col-md-4">
+                        <div class="card borderless-card">
+                            <div class="card-body card-body-image d-flex justify-content-center align-items-center">
+                                <img class="image" src="/images/dashboard_image.jpeg" />
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-8">
+                        <div class="card  border-card">
+                            <div class="card-body" id="card-2">
+                            <a href="/Outputs/Maps" style="@(OutPutsPage ? "text-decoration: none" : "pointer-events: none; cursor: not-allowed;text-decoration: none")">
+                                    <h1 style="font-size: 25px;margin-top: 10px;margin-bottom: 10px;">Charts & Reports</h1>
+                                    <center>
+                                    <img class="" src="~/images/ProjectEfficiencyAndCost_BG.png" width="70%" style="" />
+                                    </center>
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-3 mb-4">
+                <div class="card  border-card" style="height:100%">
+                    <div class="card-body" style="background-color: #9db4fccc;">
+
+                        <h1 style="color:rgba(65, 105, 225, 0.8);    margin-top: 150px;">PROJECT BUILDER</h1>
+                            <p style="color:white; font-weight: bold" class="mt-5">
+                                ProjectBuilder is an open source system developed by Spy Pond Partners, LLC for PennDOT.
+                            </p>
+                        <center class="mt-5">
+                        <a href="https://dsstest.pbweb.info/Scenarios" target="_blank" style="text-decoration: none;color:rgba(65, 105, 225, 0.8) !important;text-align:center;">
+                            <b>Click here to continue...</b>
+                        </a>
+                        </center>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+
+        <div class="row justify-content-center align-items-stretch  d-none" style="padding:20px;background:grey;margin-bottom:50px;margin-top:-80px">
+            <div class="col-md-6">
+            <p style="font-weight:bold;">Work Candidates</p>
+            </div>
+            <div class="col-md-6">
+                <p style="font-weight:bold;">Projects</p>
+            </div>
+            <div class="col-md-6 mb-4 d-flex">
+                <div class="card border-card flex-fill" style="background:#b9c7b9">
+                   
+                    <img class="image" src="/images/WorkCandidates.png" width="100%" />
+                    <a href="/Pools" style="text-decoration: none;">
+                        <p class="mt-3 text-bg-danger" style="background:#1c305c !important;">
+                            @if (Model.Pools != null && Model.Pools.Any()) {
+                                <span style="background:#1c305c;">Click for more</span>
+                             }
+                            else
+                            {
+                                <span style="background:#1c305c;">Create a new candidate pool</span>
+                            }
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-6 mb-4 d-flex">
+                <div class="card border-card flex-fill" style="background:#b9c7b9">
+                    
+                    <img class="image" src="/images/Projects.png" width="100%" />
+                    <a href="https://dsstest.pbweb.info/Scenarios" target="_blank" style="text-decoration: none;color:rgba(65, 105, 225, 0.8) !important;">
+                        <p class="mt-3 text-bg-danger" style="background:#1c305c !important;">
+                        <span style="background:#1c305c;">Project Builder</span>
+                        </p>
+                    </a>
+                </div>
+            </div>
+            <div class="col-md-12">
+                <p class="text-center" style="font-weight:bold;">Efficiency - Cost Outcome</p>
+            </div>
+            <div class="col-md-12  d-flex">
+                <div class="card border-card flex-fill" style="background:#b9c7b9">                    
+                    <img class="image" src="/images/ProjectEfficiencyAndCost.png" width="100%" />
+
+                    <a href="/Outputs/Maps" style="text-decoration: none;">
+                        <p class="mt-3 text-bg-danger" style="background:#1c305c !important;">
+                            @if (Model.Pools != null && Model.Pools.Any())
+                            {
+                                <span style="background:#1c305c;">Click for more </span>
+                            }
+                            else
+                            {
+                                <span style="background:#1c305c;">Create a new candidate pool to view more representation</span>
+                            }
+                        </p>
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row  d-none" style="">
+            </div>
+
+
+    
+</div>
+
+<style>
+    .border-card{
+        padding: 10px;
+    }
+
+    .borderless-card{
+        height: 320px !important;
+    }
+
+    .row > *{
+        
+    }
+</style>
+

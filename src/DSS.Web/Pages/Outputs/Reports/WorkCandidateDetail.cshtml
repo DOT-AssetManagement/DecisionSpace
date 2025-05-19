@@ -1,0 +1,230 @@
+﻿@page
+@model DSS.Web.Pages.Outputs.Reports.WorkCandidateDetailModel
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Outputs";
+    ViewData["SubMenu"] = "Reports";
+    ViewData["SubSubMenu"] = "WorkCandidateDetail";
+    ViewData["poolId"] = Model.PoolId != Guid.Empty ? Model.PoolId.ToString() : "";
+}
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Work Candidate Detail</h1>
+    
+    <div class="row">
+        <div class="col-md-4">
+            <form method="GET" action="/Outputs/Reports/WorkCandidateDetail">
+            <div class="form-group">
+                <label for="selectPool">Select Candidate Pool:</label>
+                <div class="input-group">
+                    <select class="form-control form-control-sm" id="selectPool" name="poolId">
+                        <option value=""><strong>-- Select Pool --</strong></option>
+                        @foreach (var pool in Model.Pools)
+                        {
+                            <option value="@pool.Id">@pool.Name</option>
+                        }
+                    </select>
+                    <div class="input-group-append">
+                        <button type="submit" id="search" class="btn btn-primary" style="margin-left: 10px;">Search</button>
+                    </div>
+                </div>
+            </div>
+            </form>
+        </div>
+
+        <div class="col-md-6"></div>
+        <div class="col-md-2">
+            @if (Model.PoolName != null)
+            {
+                <span>Pool Name: </span> <span style="font-size: 14px; font-weight: bold;">@Model.PoolName</span>
+            }
+        </div>
+    </div>
+    <div class="fa-message">
+        <h2>Please Select Pool to See Data </h2>
+    </div>
+
+    <div class="card mb-4" style="margin-top:1%; display:none;">
+        <div class="card-body">
+
+            <div class="table-container">
+                <div id="projectCandidateTable"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<style>
+    .tabulator-col-group .tabulator-col-title {
+        text-align: center;
+    }
+
+    .tabulator-header .tabulator-col-group-title {
+        text-align: center;
+        border: 1px solid #ccc;
+    }
+
+    .tabulator-header .tabulator-col-group, .tabulator-header, .tabulator-col {
+        border: 1px solid #ccc;
+    }
+
+    .text-right {
+        text-align: right;
+    }
+
+    .wrap-text {
+        white-space: normal !important;
+        word-wrap: break-word;
+    }
+
+    .tabulator .tabulator-header{
+        background: #669999 !important;
+    }
+</style>
+
+@if (Model.PoolName != null)
+{
+    <script>
+        function stripHTMLTags(str) {
+            var doc = new DOMParser().parseFromString(str, 'text/html');
+            return doc.body.textContent || "";
+        }
+      
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            columns.forEach(column => {
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + stripHTMLTags(column.getDefinition().title);
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        e.stopPropagation();
+
+                        column.toggle();
+
+                        // Change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+
+                        // Rebuild the menu to reflect changes
+                        column.getTable().redraw(true);
+                    }
+                });
+            });
+
+            return menu;
+        };
+
+
+        function formatMoneyWithDecimal(value) {
+            if (!isNaN(value) && value) {
+                return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 2 });
+            }
+            return value;
+        }
+
+        function formatMoney(value) {
+            if (!isNaN(value) && value) {
+                return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+            }
+            return value;
+        }
+
+
+        $(document).ready(function () {
+            var tableData = @Html.Raw(@Model.jsonResult);
+
+            if (tableData.length > 0) {
+                $(".fa-message").hide();
+
+                // Show the card
+                document.querySelector('.card').style.display = 'block';
+
+                // Initialize the Tabulator table
+                var table = new Tabulator("#projectCandidateTable", {
+                    layout: "fitDataFill",
+                    resizableColumnFit: true,
+                    data: tableData,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [5, 10, 25],
+                    movableColumns: true,
+                    paginationCounter: "rows",
+                    height: "700px",
+                    columns: [
+                        { title: "<div style='padding:10px;text-align:center;'>Description</div>", field: "Description", headerMenu: headerMenu, width: "30%", formatter: "textarea" },
+                        {
+                            title: "<div style='padding:10px;text-align:center;'>Cost<br>($Thousand)</div>", field: "Cost000", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                return formatMoney(cell.getValue());
+                            }
+                        },
+                        {
+                            title: "Score by Goal", columns: [
+                                {
+                                    title: "Safety", field: "SafetyScore", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                        return formatMoneyWithDecimal(cell.getValue());
+                                    }
+                                },
+                                {
+                                    title: "Mobility", field: "MobilityScore", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                        return formatMoneyWithDecimal(cell.getValue());
+                                    }
+                                },
+                                {
+                                    title: "Equity", field: "EquityScore", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                        return formatMoneyWithDecimal(cell.getValue());
+                                    }
+                                },
+                                {
+                                    title: "Resilience", field: "ResilienceScore", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                        return formatMoneyWithDecimal(cell.getValue());
+                                    }
+                                },
+                                {
+                                    title: "Condition", field: "ConditionScore", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                        return formatMoneyWithDecimal(cell.getValue());
+                                    }
+                                }]
+                        },
+                        {
+                            title: "Benefit", field: "Benefit000", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                return formatMoneyWithDecimal(cell.getValue());
+                            }
+                        },
+                        {
+                            title: "<div style='padding:10px;text-align:center;'>Relative Efficiency<br> (Projects)</div>", field: "RelativeEfficiency", width:"20%", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                return formatMoneyWithDecimal(cell.getValue());
+                            }
+                        },
+        
+
+                    ],
+                });
+            } else {
+                $(".fa-message").html("<h2>This Pool didn't contain any data.</h2>").show();
+            }
+        });
+    </script>
+}

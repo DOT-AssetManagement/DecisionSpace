@@ -1,0 +1,246 @@
+﻿@page
+@model DSS.Web.Pages.Scenarios.CreateScenarioModel
+
+@inject DSS.Web.Pages.Pools.IndexModel poolspage
+ @inject Microsoft.AspNetCore.Http.IHttpContextAccessor HttpContextAccessor
+@{
+    // Usage of poolspage here
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Scenarios";
+}
+
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+
+
+<div class="container-fluid px-4">
+    <h4 class="mt-4">Create New Scenario</h4>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item active">Scenarios</li>
+    </ol>
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <div class="container" style="margin-bottom:100px;margin-top:40px;">
+                <form id="ScenarioForm" class="needs-validation" method="post" novalidate asp-page-handler="Create">
+                    <div class="accordion-container">
+                        <div id="accordion">
+                            <div>
+                                <div style="background:#fff;" class="col-md-6">
+                                    <label for="scenarioname" class="form-label">Scenario Name</label>
+                                    <input type="text" id="scenarioname" name="ScenName" class="form-control" required />
+                                    <div class="invalid-feedback">Scenario Name is required.</div>
+                                </div>
+                                <div style="background:#fff;" class="col-md-6 mt-3">
+                                    <label for="Description" class="form-label">Scenario Description</label>
+                                    <input type="text" id="Description" name="Description" class="form-control" required />
+                                    <div class="invalid-feedback">Scenario Description is required.</div>
+                                </div>
+
+                            </div>
+                            <h3 style="margin-top:25px" class="poolAccordion">Select a Candidate Pool</h3>
+                            <div id="ValidcandPool" style="color:#dc3545;display:none;font-size:.875em;">Create or Select a Candidate Pool</div>
+                            <div class="mt-3 d-flex justify-content-end">
+                                <button type="button" class="btn btn-primary mx-2" data-bs-toggle="modal" data-bs-target="#CreateNewLibraryForm" id="createPoolButton">Create Empty Candidate Pool</button>
+                            </div>
+                            <div>
+                                <div class="table-container mt-3">
+                                    <div id="candidatePoolsTable"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-2 mt-5 d-flex">
+                        <button id="CreateScen" style="width:100%;" type="submit" class="btn btn-primary">Create Scenario</button>
+                    </div>
+                </form>
+
+            </div>
+
+
+
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="CreateNewLibraryForm" tabindex="-1" role="dialog"
+     aria-labelledby="CreateNewLibraryFormlabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="CreateNewLibraryFormlabel">Create Empty Candidate Pool</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="createLibraryForm" method="post" asp-page-handler="Create">
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="Name" class="form-label">Candidate Pool Name</label>
+                        <input type="text" name="Name" class="form-control" required />
+                    </div>
+                    <div class="mb-3">
+                        <label for="Description" class="form-label">Candidate Pool Description</label>
+                        <input name="Description" type="text" class="form-control" required />
+                    </div>
+                    <div class="form-check mb-3 d-none">
+                        <input class="form-check-input" type="radio" name="IsActive" value="true" checked>
+                        <label class="form-check-label" for="IsActive">
+                            Create an empty candidate pool
+                        </label>
+                    </div>
+                    <div class="mb-3">
+                        <div class="form-check form-switch">
+                            <input class="form-check-input" type="checkbox" id="IsSharedLibrary" name="IsSharedLibrary" value="true">
+                            <label class="form-check-label" for="IsSharedLibrary">Shared</label>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+</div>
+
+@{
+    var tableData = new List<object>();
+
+    foreach (var pool in Model.Pools)
+    {
+        tableData.Add(new { Id = pool.Id, Name = pool.Name, Description = pool.Description, UserId = pool.UserId.ToString(), CreatedBy = pool.CreatedBy, CreatedAt = pool.CreatedAt?.ToString("yyyy-MM-dd"), UpdatedBy = pool.UpdatedBy, UpdatedAt = pool.UpdatedAt?.ToString("yyyy-MM-dd"), IsSharedLibrary = pool.IsSharedLibrary.ToString(), SourcePoolId = pool.SourcePoolId?.ToString(), IsActive = pool.IsActive });
+    }
+
+    var jsonTableData = System.Text.Json.JsonSerializer.Serialize(tableData);
+}
+<script>
+    var tableData = @Html.Raw(jsonTableData);
+</script>
+
+<script>
+    function radioFormatter(cell, formatterParams, onRendered) {
+        var id = cell.getRow().getData().Id;
+        return `<input type="radio" name="poolId" value="${id}" />`;
+    }
+    var table = new Tabulator("#candidatePoolsTable", {
+        layout: "fitDataFill",
+        resizableColumnFit: true,
+        data: tableData,
+        movableColumns: true,
+        columns: [
+            { title: "", field: "radio", formatter: radioFormatter, headerSort: false, hozAlign: "center", width: "5%" },
+            { title: "Name", field: "Name", width: "30%" },
+            { title: "Description", field: "Description", width: "30%" },
+            { title: "Created At", field: "CreatedAt", width: "20%" },
+            { title: "Is Shared Library", field: "IsSharedLibrary", width: "15%" }
+        ],
+    });
+
+
+
+    $(document).on("keyup", "#scenarioname", function () {
+        $.ajax({
+            url: '/Scenarios/CreateScenario?handler=CheckName&name=' + $(this).val(),
+            method: "GET",
+            success: function (response) {
+                if (response.success) {
+                    alert("exists");
+                }
+            }
+        });
+    });
+
+
+    $(document).ready(function () {
+        $('#createLibraryForm').submit(function (e) {
+            e.preventDefault();
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Page("/Pools/Index")?handler=Create',
+                data: formData,
+                success: function (response) {
+                    console.log('Pool created successfully!');
+                    $('#myModal').modal('hide');
+                    location.reload();
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error creating pool: ' + error);
+                }
+            });
+        });
+    });
+
+    $(document).ready(function () {
+        // Click event handler for the "Create Scenario" button
+        $('#CreateScen').click(function (event) {
+            var isValid = true;
+
+            // Validate Scenario Name
+            var scenarioName = $('#scenarioname');
+            if (scenarioName.val().trim() === '') {
+                scenarioName.addClass('is-invalid');
+                isValid = false;
+            } else {
+                scenarioName.removeClass('is-invalid');
+            }
+
+            // Validate Scenario Description
+            var description = $('#Description');
+            if (description.val().trim() === '') {
+                description.addClass('is-invalid');
+                isValid = false;
+            } else {
+                description.removeClass('is-invalid');
+            }
+
+            // Validate Candidate Pool Selection
+            var selectedPool = $('input[name="poolId"]:checked');
+            if (selectedPool.length === 0) {
+                $('#ValidcandPool').show();
+                isValid = false;
+            } else {
+                $('#ValidcandPool').hide();
+            }
+
+            // If the form is not valid, prevent submission
+            if (!isValid) {
+                event.preventDefault();
+            }
+        });
+
+        // Remove validation message as soon as user starts typing
+        $('#scenarioname, #Description').on('input', function () {
+            $(this).removeClass('is-invalid');
+        });
+
+        // Remove candidate pool selection validation message when a pool is selected
+        $('input[name="poolId"]').on('change', function () {
+            $('#ValidcandPool').hide();
+        });
+    });
+
+
+</script>
+
+<style>
+    table.dataTable thead th {
+        background-color: #0066cc !important;
+        color: #000000;
+        opacity: 65%;
+    }
+
+    .table-container {
+        /*display: flex;
+        justify-content: center;
+        align-items: center;*/
+    }
+</style>

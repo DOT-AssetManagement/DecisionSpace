@@ -1,0 +1,543 @@
+﻿ @page
+ @using DSS.Permissions
+@using Volo.Abp.Authorization.Permissions
+@inject IPermissionChecker PermissionChecker
+@model DSS.Web.Pages.Outputs.PoolProjectModel
+@{
+    var Export = await PermissionChecker.IsGrantedAsync(PoolProjectPermissions.PoolsProjectPageActions.Export);
+}
+
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Outputs";
+}
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+<style>
+    .fa-message {
+        text-align: center;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .tabulator .tabulator-header {
+        background: #669999 !important;
+    }
+</style>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Projects</h1>
+
+
+    <div id="filtercontainer">
+        <div class="row mt-4 align-items-end">
+            <div class="col-md-3">
+                <input id="pool" type="hidden" value="@Model.PoolId" />
+                <label for="filterDistrict">Select District:</label>
+                <select class="form-control form-control-sm" id="filterDistrict">
+                    <option value="">-- All Districts --</option>
+                    @if (Model.Districts != null)
+                    {
+                        @foreach (var district in Model.Districts)
+                        {
+                            <option value="@district">@district</option>
+                        }
+                    }
+                </select>
+            </div>
+
+            <div class="col-md-2">
+                <label for="filterCounty">Select County:</label>
+                <select class="form-control form-control-sm" id="filterCounty" name="filterCounty">
+                    <option value="">-- All Counties --</option>
+                    @if (Model.Counties != null)
+                    {
+                        @foreach (var county in Model.Counties)
+                        {
+                            <option value="@county">@county</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="filterMinYear">Select Earliest Year:</label>
+                <select class="form-control form-control-sm" id="filterMinYear">
+                    <option value="">-- All Years --</option>
+                    @if (Model.YearEarliests != null)
+                    {
+                        @foreach (var year in Model.YearEarliests)
+                        {
+                            <option value="@year">@year</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-2">
+                <label for="filterMaxYear">Select Latest Year:</label>
+                <select class="form-control form-control-sm" id="filterMaxYear">
+                    <option value="">-- All Years --</option>
+                    @if (Model.YearLatests != null)
+                    {
+                        @foreach (var year in Model.YearLatests)
+                        {
+                            <option value="@year">@year</option>
+                        }
+                    }
+                </select>
+            </div>
+            <div class="col-md-3">
+                <label>&nbsp;</label>
+                <button id="searchbutton" class="btn btn-primary btn-block">Search</button>
+                <form method="post" action="/Outputs/PoolProject?handler=Export" style="float:right">
+                    <input type="hidden" name="poolId" value="@Model.PoolId" />
+                    <button type="submit" class="btn btn-primary @(Export?"":"d-none")">Export to Excel</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    <form method="get" class="row mt-4" style="display: none;">
+        <div class="form-group col-md-6">
+            <label for="selectPool">Select CandidatePool:</label>
+            <div class="input-group">
+                <select class="form-control form-control-sm" id="selectPool" name="PoolId">
+                    <option value=""><strong>-- Select Pool --</strong></option>
+                    @if (Model.Pools != null)
+                    {
+                        @foreach (var pool in Model.Pools)
+                        {
+                            <option value="@pool.Id">@pool.Name</option>
+                        }
+                    }
+                </select>
+            </div>
+        </div>
+    </form>
+
+    <div class="card mb-4" style="margin-top: 1%; display: none;">
+        <div class="card-body">
+            <div class="table-container">
+                <div id="projectCandidateTable"></div>
+            </div>
+        </div>
+    </div>
+</div>
+
+
+
+
+
+<div id="projectModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <form method="POST" asp-page-handler="UpdateProject">
+
+            <input type="hidden" name="input.PoolId" id="PoolId" placeholder="">
+            <input type="hidden" name="input.Id" id="Id" placeholder="">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Project</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">District</label>
+                            <input type="number" class="form-control" name="input.District" id="District" readonly placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">County</label>
+                            <input type="number" class="form-control" name="input.Cnty" id="Cnty" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Description</label>
+                            <input type="text" class="form-control" name="input.Description" id="Description" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Number Of Work Candidates</label>
+                            <input type="number" class="form-control" name="input.NumberOfWorkCandidates" id="NumberOfWorkCandidates" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Treatment</label>
+                            <input type="text" class="form-control" name="input.Treatment" id="Treatment" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Year Earliest</label>
+                            <input type="number" class="form-control" name="input.YearEarliest" id="YearEarliest" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Year Latest</label>
+                            <input type="number" class="form-control" name="input.YearLatest" id="YearLatest" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Total Cost</label>
+                            <input type="text" class="form-control" name="input.TotalCost" id="TotalCost" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Total Scaled Benefit</label>
+                            <input type="text" class="form-control" name="input.TotalScaledBenefit" id="TotalScaledBenefit" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Safety Score</label>
+                            <input type="text" class="form-control" name="input.SafetyScore" id="SafetyScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Mobility And Economy Score</label>
+                            <input type="text" class="form-control" name="input.MobilityAndEconomyScore" id="MobilityAndEconomyScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Equity And Access Score</label>
+                            <input type="text" class="form-control" name="input.EquityAndAccessScore" id="EquityAndAccessScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Resilience And Environment Score</label>
+                            <input type="text" class="form-control" name="input.ResilienceAndEnvironmentScore" id="ResilienceAndEnvironmentScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Condition And Performance Score</label>
+                            <input type="text" class="form-control" name="input.ConditionAndPerformanceScore" id="ConditionAndPerformanceScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Total Score</label>
+                            <input type="text" class="form-control" name="input.TotalScore" id="TotalScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Relative Efficiency</label>
+                            <input type="text" class="form-control" name="input.RelativeEfficiency" id="RelativeEfficiency" placeholder="">
+                        </div>
+                        <div class="col-md-3 d-none">
+                            <label for="input1" class="form-label">Relative Efficiency Set At</label>
+                            <input type="datetime" class="form-control" name="input.RelativeEfficiencySetAt" id="RelativeEfficiencySetAt" placeholder="">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning closeModal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@{
+    var tableData = new List<object>();
+
+    foreach (var projectCandidate in Model.ProjectCandidates)
+    {
+        tableData.Add(new
+        {
+            PoolId = projectCandidate.PoolId,
+            Id = projectCandidate.Id,
+            District = projectCandidate.District,
+            Cnty = projectCandidate.Cnty,
+            Description = projectCandidate.Description,
+            NumberOfWorkCandidates = projectCandidate.NumberOfWorkCandidates,
+            Treatment = projectCandidate.Treatment,
+            YearEarliest = projectCandidate.YearEarliest,
+            YearLatest = projectCandidate.YearLatest,
+            TotalCost = projectCandidate.TotalCost,
+            TotalScaledBenefit = projectCandidate.TotalScaledBenefit?.ToString("N2"),
+            SafetyScore = projectCandidate.SafetyScore?.ToString("N2"),
+            MobilityAndEconomyScore = projectCandidate.MobilityAndEconomyScore?.ToString("N2"),
+            EquityAndAccessScore = projectCandidate.EquityAndAccessScore?.ToString("N2"),
+            ResilienceAndEnvironmentScore = projectCandidate.ResilienceAndEnvironmentScore?.ToString("N2"),
+            ConditionAndPerformanceScore = projectCandidate.ConditionAndPerformanceScore?.ToString("N2"),
+            TotalScore = projectCandidate.TotalScore?.ToString("N2"),
+            RelativeEfficiency = projectCandidate.RelativeEfficiency,
+            RelativeEfficiencySetAt = projectCandidate.RelativeEfficiencySetAt?.ToString("yyyy-MM-dd")
+        });
+    }
+
+    var jsonTableData = System.Text.Json.JsonSerializer.Serialize(tableData);
+    var permissions = new
+    {
+        Edit = await PermissionChecker.IsGrantedAsync(PoolProjectPermissions.PoolsProjectPageActions.Edit)
+    };
+
+    var jsonPermissions = System.Text.Json.JsonSerializer.Serialize(permissions);
+}
+
+<script>
+    var tableData = @Html.Raw(jsonTableData);
+    var userPermissions = @Html.Raw(jsonPermissions);
+
+    var headerMenu = function () {
+        var menu = [];
+        var columns = this.getColumns();
+
+        columns.forEach(column => {
+            let icon = document.createElement("i");
+            icon.classList.add("fas");
+            icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+            let label = document.createElement("span");
+            let title = document.createElement("span");
+
+            title.textContent = " " + column.getDefinition().title;
+
+            label.appendChild(icon);
+            label.appendChild(title);
+
+            menu.push({
+                label: label,
+                action: function (e) {
+                    e.stopPropagation();
+
+                    column.toggle();
+
+                    // Change menu item icon
+                    if (column.isVisible()) {
+                        icon.classList.remove("fa-square");
+                        icon.classList.add("fa-check-square");
+                    } else {
+                        icon.classList.remove("fa-check-square");
+                        icon.classList.add("fa-square");
+                    }
+
+                    // Rebuild the menu to reflect changes
+                    column.getTable().redraw(true);
+                }
+            });
+        });
+
+        return menu;
+    };
+
+    function projectNameSorter(a, b, aRow, bRow, column, dir, sorterParams) {
+        var numA = parseInt(a.replace(/[^0-9]/g, ''), 10);
+        var numB = parseInt(b.replace(/[^0-9]/g, ''), 10);
+
+        numA = isNaN(numA) ? 0 : numA;
+        numB = isNaN(numB) ? 0 : numB;
+
+        return numA - numB;
+    }
+
+    function formatMoneyWithDecimal(value) {
+        if (!isNaN(value) && value) {
+            return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 2 });
+        }
+        return value;
+    }
+
+    function formatMoney(value) {
+        if (!isNaN(value)) {
+            return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+        return value;
+    }
+
+    $(document).on("click", ".createBtn", function () {
+        $("#projectModal input[type=hidden]").val("");
+        $("#projectModal input[type=text]").val("");
+        $("#projectModal input[type=number]").val("");
+        $("#projectModal #PoolId").val("@Model.PoolId");
+        $("#projectModal #District").removeAttr("readonly");
+        $("#projectModal #Cnty").removeAttr("readonly");
+        $("#projectModal form").attr("action", "/Outputs/Projects?handler=CreateProject");
+        $("#projectModal").modal("show");
+    });
+
+    $(document).on("click", ".closeModal", function () {
+        $("#projectModal").modal("hide");
+    });
+</script>
+
+@if (Model.PoolName != null)
+{
+    <script>
+        $(document).ready(function () {
+            var tableData = @Html.Raw(jsonTableData);
+            var userPermissions = @Html.Raw(jsonPermissions);
+
+            function hasPermission(permissionName) {
+                return userPermissions[permissionName];
+            }
+
+            if (tableData.length > 0) {
+                $(".fa-message").hide();
+
+                document.querySelector('.card').style.display = 'block';
+
+                // Initialize the Tabulator table
+                var table = new Tabulator("#projectCandidateTable", {
+                    layout: "fitDataFill",
+                    resizableColumnFit: true,
+                    data: tableData,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [5, 10, 25],
+                    movableColumns: true,
+                    paginationCounter: "rows",
+                    height: "500px",
+                    columns: [
+                        { title: "District", field: "District", hozAlign: "right" },
+                        { title: "Cnty", field: "Cnty", hozAlign: "right" },
+                        { title: "Description", field: "Description", sorter: projectNameSorter },
+                        { title: "Number Of Work Candidates", field: "NumberOfWorkCandidates", hozAlign: "right" },
+                        { title: "Treatment", field: "Treatment" },
+                        { title: "Year Earliest", field: "YearEarliest", hozAlign: "right" },
+                        { title: "Year Latest", field: "YearLatest", hozAlign: "right" },
+                        {
+                            title: "Total Cost", field: "TotalCost", hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                return formatMoney(cell.getValue());
+                            }
+                        },
+                        { title: "Total Scaled Benefit", field: "TotalScaledBenefit", hozAlign: "right" },
+                        { title: "Safety Score", field: "SafetyScore", hozAlign: "right" },
+                        { title: "Mobility And Economy Score", field: "MobilityAndEconomyScore", hozAlign: "right" },
+                        { title: "Equity And Access Score", field: "EquityAndAccessScore", hozAlign: "right" },
+                        { title: "Resilience And Environment Score", field: "ResilienceAndEnvironmentScore", hozAlign: "right" },
+                        { title: "Condition And Performance Score", field: "ConditionAndPerformanceScore", hozAlign: "right" },
+                        { title: "Total Score", field: "TotalScore", hozAlign: "right" },
+                        {
+                            title: "Relative Efficiency", field: "RelativeEfficiency", hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                                return formatMoneyWithDecimal(cell.getValue());
+                            }
+                        },
+                        { title: "Relative Efficiency Set At", field: "RelativeEfficiencySetAt" },
+                        {
+                            title: "Actions",
+                            field: "Actions",
+                            width: 150,
+                            frozen: true,
+                            formatter: function (cell, formatterParams, onRendered) {
+                                var editHTML = `<button class="editRowBtn" ${hasPermission('Edit') ? '' : 'disabled'}><i class="fas fa-pencil"></i></button>`;
+                                return editHTML;
+                            },
+
+                            cellClick: function (e, cell) {
+                                window.location.href = "/WorkCandidates?Projectid=" + cell.getData().Id;
+                            }
+                        }
+                    ],
+                });
+            } else {
+                $(".fa-message").html("<h2>This Pool didn't contain any data.</h2>").show();
+            }
+        });
+    </script>
+}
+
+
+
+
+<script>
+    $(document).ready(function () {
+        function handleFilterChange() {
+            var district = $("#filterDistrict").val();
+            var county = $("#filterCounty").val();
+            var minYear = $("#filterMinYear").val();
+            var maxYear = $("#filterMaxYear").val();
+            var poolId = $("#pool").val();
+
+            $.ajax({
+                type: "GET",
+                url: '@Url.Page("/Outputs/PoolProject")',
+                data: {
+                    handler: "DropDownValue",
+                    poolId: poolId,
+                    district: district,
+                    county: county,
+                    minYear: minYear,
+                    maxYear: maxYear,
+                },
+                success: function (response) {
+                    $("#filterCounty").empty().append('<option value="">-- All Counties --</option>');
+                    if (response.counties) {
+                        $.each(response.counties, function (index, county) {
+                            $("#filterCounty").append('<option value="' + county + '">' + county + '</option>');
+                        });
+                    }
+                    $("#filterCounty").val(county);
+
+                    // Clear and repopulate the min year dropdown
+                    $("#filterMinYear").empty().append('<option value="">-- All Years --</option>');
+                    if (response.yearEarliests) {
+                        $.each(response.yearEarliests, function (index, minYear) {
+                            $("#filterMinYear").append('<option value="' + minYear + '">' + minYear + '</option>');
+                        });
+                    }
+                    $("#filterMinYear").val(minYear);
+
+                    // Clear and repopulate the max year dropdown
+                    $("#filterMaxYear").empty().append('<option value="">-- All Years --</option>');
+                    if (response.yearLatests) {
+                        $.each(response.yearLatests, function (index, maxYear) {
+                            $("#filterMaxYear").append('<option value="' + maxYear + '">' + maxYear + '</option>');
+                        });
+                    }
+                    $("#filterMaxYear").val(maxYear);
+                },
+                error: function (xhr, status, error) {
+                    console.error("Error making AJAX request:", error);
+                    // Handle errors if needed
+                }
+            });
+        }
+
+        // Bind change event handlers for relevant fields
+        $("#filterDistrict, #pool").change(function () {
+            $("#filterCounty").val("");
+            $("#filterMinYear").val("");
+            $("#filterMaxYear").val("");
+            handleFilterChange();
+        });
+        $("#filterCounty, #pool").change(function () {
+            $("#filterMinYear").val("");
+            $("#filterMaxYear").val("");
+            handleFilterChange();
+        });
+        $("#filterMinYear, #pool").change(function () {
+            $("#filterMaxYear").val("");
+            handleFilterChange();
+        });
+        $("#filterMaxYear").change(function () {
+            handleFilterChange();
+        });
+
+    });
+</script>
+
+
+
+<script>
+    $(document).ready(function () {
+        $('#searchbutton').click(function (e) {
+            e.preventDefault();
+
+            var district = $("#filterDistrict").val();
+            var county = $("#filterCounty").val();
+            var minYear = $("#filterMinYear").val();
+            var maxYear = $("#filterMaxYear").val();
+            var poolId = $("#pool").val();
+
+            // Perform AJAX call
+            $.ajax({
+                type: "GET",
+                url: '@Url.Page("/Outputs/PoolProject")',
+                data: {
+                    poolId: poolId,
+                    district: district,
+                    county: county,
+                    minYear: minYear,
+                    maxYear: maxYear
+                },
+                success: function (response) {
+                    $("body").html(response);
+                    $("#filterDistrict").val(district);
+                    $("#filterCounty").val(county);
+                    $("#filterMinYear").val(minYear);
+                    $("#filterMaxYear").val(maxYear);
+                },
+                error: function (xhr, status, error) {
+                    // Handle errors
+                    console.error('AJAX call error', status, error);
+                }
+            });
+        });
+    });
+
+
+</script>

@@ -1,0 +1,204 @@
+﻿@page
+@model DSS.Web.Pages.Outputs.Charts.ProjectEfficiencyAndCostModel
+@{
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Outputs";
+    ViewData["SubMenu"] = "Charts";
+    ViewData["SubSubMenu"] = "ProjectEfficiencyAndCost";
+    ViewData["poolId"] = Model.PoolId != Guid.Empty ? Model.PoolId.ToString() : "";
+}
+
+<script src="https://d3js.org/d3.v3.min.js" charset="utf-8"></script>
+<script src="~/js/underscore-min.js"></script>
+<script src="~/js/d3.parcoords.js"></script>
+<script src="~/js/d3.underscore.math.js"></script>
+<script src="~/js/d3.divgrid.js"></script>
+<link rel="stylesheet" href="~/css/droid.css" type="text/css" charset="utf-8" />
+
+<link href="~/css/d3.parcoords.css" rel="stylesheet">
+<link href="~/css/bigdata.parallelcoordinates.css" rel="stylesheet">
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Project Efficiency And Cost</h1>
+  
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <form method="get" class="row">
+                <div class="form-group col-md-4">
+                    <label for="scenarioSelect">Select Candidate Pool:</label>
+                    <div class="input-group">
+                        <select class="form-control form-control-sm" id="scenarioSelect" name="poolId">
+                            <option value=""><strong>-- Select Candidate Pool --</strong></option>
+                            @foreach (var pool in Model.Pools)
+                            {
+                                @if (pool.Id == Model.PoolId)
+                                {
+                                    <option value="@pool.Id" selected>@pool.Name</option>
+                                }
+                                else
+                                {
+                                    <option value="@pool.Id">@pool.Name</option>
+                                }
+
+                            }
+                        </select>
+                    </div>
+                </div>
+                <div class="form-group col-md-4" style="margin-top:-1%">
+                    <button type="submit" class="btn btn-primary" style="margin-top: 32px;">Search</button>
+                </div>
+            </form>
+
+            <div id="wrapper" class="parcoords mt-5" style="width:100%;height:500px;max-width:1200px !important;">
+            </div>
+            <div id="grid" class="d-none"></div>
+
+        </div>
+    </div>
+
+</div>
+
+<script>
+    var graph;
+    var dataset;
+
+    document.addEventListener('DOMContentLoaded', function () {
+
+        var jsonString = `@Html.Raw(Model.json)`;
+
+        // Parse the JSON data
+        var data = JSON.parse(jsonString);
+
+        // Parameters for the dimensions
+        var param = ['Description', 'RelativeEfficiency', 'TotalCost'];
+        var dataset = data;
+
+        // Create the parallel coordinates graph
+        var graph = d3.parcoords()('#wrapper')
+            .data(data)
+            .alpha(0.4)
+            .mode("queue")
+            .rate(5)
+            .render()
+            .interactive()
+            .brushable()
+            .dimensions(param);
+
+        // Change color function
+        function change_color(dimension) {
+            /*graph.svg.selectAll(".dimension")
+                .style("font-weight", "normal")
+                .filter(function (d) { return d == dimension; })
+                .style("font-weight", "bold");
+
+            graph.color(() => "white").render(); // Apply white color to all lines
+            graph.svg.selectAll(".foreground path")
+                .style("stroke-width", "3px") // Make lines thicker
+                .style("stroke", "white"); // Ensure lines are white
+
+            graph.svg.selectAll(".dimension .axis line, .dimension .axis path")
+                .style("stroke", "white");
+
+            graph.svg.selectAll(".dimension text")
+                .style("fill", "white");*/
+
+          
+        }
+
+        // Apply initial color change
+        change_color("Project ID");
+
+        // Set up the click event for dimensions
+        graph.svg
+            .selectAll(".dimension")
+            .on("click", function (d) {
+                change_color(d);
+            });
+
+        // Create the grid
+        var grid = d3.divgrid();
+        d3.select("#grid")
+            .datum(data.slice(0, data.length))
+            .call(grid)
+            .selectAll(".row")
+            .on("mouseover", function (d) { graph.highlight([d]); })
+            .on("mouseout", function () { graph.unhighlight(); });
+
+        // Set up brush event
+        graph.on("brush", function (d) {
+            d3.select("#grid")
+                .datum(d.slice(0, d.length))
+                .call(grid)
+                .selectAll(".row")
+                .on("mouseover", function (d) { graph.highlight([d]); })
+                .on("mouseout", function () { graph.unhighlight(); });
+        });
+    });
+
+    // Remove all but selected from the dataset
+    d3.select("#keep-data")
+        .on("click", function () {
+            new_data = graph.brushed();
+            if (new_data.length == 0) {
+                alert("Please do not select all the data when keeping/excluding");
+                return false;
+            }
+            callUpdate(new_data);
+        });
+
+    // Exclude selected from the dataset
+    d3.select("#exclude-data")
+        .on("click", function () {
+            new_data = _.difference(dataset, graph.brushed());
+            if (new_data.length == 0) {
+                alert("Please do not select all the data when keeping/excluding");
+                return false;
+            }
+            callUpdate(new_data);
+        });
+
+
+    d3.select("#reset-data")
+        .on("click", function () {
+            callUpdate(dataset);
+        });
+
+
+    var color_scale = d3.scale.linear()
+        .domain([-2, -0.5, 0.5, 2])
+        .range(["#DE5E60", "steelblue", "steelblue", "#98df8a"])
+        .interpolate(d3.interpolateLab);
+
+    function change_color(dimension) {
+        graph.svg.selectAll(".dimension")
+            .style("font-weight", "normal")
+            .filter(function (d) { return d == dimension; })
+            .style("font-weight", "bold")
+
+        graph.color(zcolor(graph.data(), dimension)).render()
+    }
+
+    function zcolor(col, dimension) {
+        var z = zscore(_(col).pluck(dimension).map(parseFloat));
+        return function (d) { return color_scale(z(d[dimension])) }
+    };
+
+    function zscore(col) {
+        var n = col.length,
+            mean = _(col).mean(),
+            sigma = _(col).stdDeviation();
+
+        return function (d) {
+            return (d - mean) / sigma;
+        };
+    };
+
+    function callUpdate(data) {
+        graph.data(data).brush().render().updateAxes();
+
+    }
+</script>

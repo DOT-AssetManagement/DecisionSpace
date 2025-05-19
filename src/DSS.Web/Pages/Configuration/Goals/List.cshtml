@@ -1,0 +1,54 @@
+﻿@page
+@model DSS.Web.Pages.Configuration.Goals.ListModel
+@{
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Configuration";
+}
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Goals</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item active">Goals</li>
+    </ol>
+    <div class="card mb-4">
+        <div class="card-body">
+            <table id="example1" class="table table-bordered table-striped dataTable no-footer" role="grid" aria-describedby="example1_info">
+                <thead>
+                    <tr role="row">
+                        <th style="display:none" class="sorting_asc">#</th>
+                        <th width="40%" class="sorting">Name</th>
+                        <th width="30%" class="sorting">Description</th>
+                        <th style="display:none" width="20%" class="sorting">Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @if (Model.Goals != null)
+                    {
+                        @foreach (var goals in Model.Goals)
+                        {
+                            <tr>
+                                <td style="display:none">@goals.Id</td>
+                                <td>@goals.Name</td>
+                                <td>@goals.Description</td>
+                                <td style="display:none">
+                                    <a  href="/Configuration/Goals/Edit?id=@goals.Id" class="btn btn-primary btn-sm">Edit</a> <br />
+                                    <form method="post" asp-page-handler="DeleteResult" asp-route-id="@goals.Id">
+                                        <button  type="submit" class="btn btn-danger btn-sm">Delete</button>
+                            </form>  
+                                </td>
+                            </tr>
+                        }
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="mt-3" title="Click to add a new goal to the list"><a style="display:none" class="btn btn-warning pull-left" href="/Configuration/Goals/Create">Add Goal</a></div>
+   
+</div>
+
+

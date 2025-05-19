@@ -1,0 +1,669 @@
+﻿@page
+@model DSS.Web.Pages.Pools.IndexModel
+@using DSS.Permissions
+@using Volo.Abp.Authorization.Permissions
+@inject IPermissionChecker PermissionChecker
+@{ 
+    var CreatecandidatePool = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Create);
+    var CandidatePoolsPage = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Default);
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Pools";
+}
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<link href="~/css/bootstrap-tour.min.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+<script type="text/javascript" src="~/js/bootstrap-tour.min.js"></script>
+
+<div class="container-fluid px-4 @(CandidatePoolsPage?"":"d-none")">
+    <h1 class="mt-4">Candidate Pools</h1>
+  
+
+
+    @if (Model.Pools != null && Model.Pools.Any())
+    {
+        
+    }
+    else
+    {
+        <div style="background: linear-gradient(90deg, #006699, #333333);width: 100%;display: flex;
+            align-items: center;
+            justify-content: center;
+            height: 75px;text-align:center;color:#fff;font-weight:bold;">
+            Create new candidate pool to begin
+        </div>
+    }
+
+    @if (Model.SessionMsg != null)
+    {
+        <div class="tempDiv" style="background: linear-gradient(90deg, #006699, #333333);width: 100%;display: flex;
+                align-items: center;
+                justify-content: center;
+                height: 75px;text-align:center;color:#fff;font-weight:bold;">
+            @Model.SessionMsg
+        </div>
+    }
+
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <div class="candidatepools_maincontent-container">
+
+                <div class="candidatepools_header row">
+                   
+                    <div class="scenarios_options-searchcontainer col-md-6">
+                        @if (Model.Pools != null && Model.Pools.Any())
+                        {
+                            <label>Search in Candidate Pools</label>
+                            <form>
+                                <div class="scenarios_options-search">
+                                    <i class="fa-solid fa-magnifying-glass"></i>
+                                    <input type="text" name="SearchString" value="@Model.SearchString">
+                                    <button type="submit" class="btn btn-primary m-1">Search</button>
+                                    <a class="btn btn-warning m-1" style="background-color:#009966 ;color:#fff;opacity: 50%;" href="/Pools">Reset</a>
+                                </div>
+
+                            </form>
+                        }
+                    </div>
+                    
+                    <div class="scenarios_options-searchcontainer col-md-6 @(CreatecandidatePool ? "" : "d-none")">
+                        <button onclick="openCreateModal()" type="button" class="btn btn-primary m-3" style="float:right;" data-bs-toggle="modal" data-bs-target="#CreateNewLibraryForm" id="CreateNewLibraryFormBtn">
+                            Create New Candidate Pool
+                        </button>   
+                    </div>
+                </div>
+
+                @if (Model.Pools != null && Model.Pools.Any())
+                {
+                    <div class="candidatepools_maincontent">
+                        <input id="userRole" type="hidden" value="Operator">
+                        <div class="card">
+                            <div class="card-body">
+                                <div>
+                                    <div id="candidatepoolstable_wrapper" class="dataTables_wrapper no-footer">
+                                   
+                                            <div id="candidatepoolstable"></div>
+                                   
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                }
+
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="CreateLibraryForm" tabindex="-1" role="dialog" aria-labelledby="editlibraryheader"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editlibraryheader">Create Candidate Pool</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <form id="createLibraryForm1" method="post">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="Name" class="form-label">Candidate Pool Name</label>
+                            <input type="text" name="Name" class="form-control" required />
+                            <div>
+                                <span class="errorMsg nameError"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="Description" class="form-label">Candidate Pool Description</label>
+                            <input name="Description" type="text" class="form-control" required />
+                        </div>
+                        <div class="form-check mb-3 d-none">
+                            <input class="form-check-input" type="radio" name="IsActive" value="true" checked>
+                            <label class="form-check-label" for="IsActive">
+                                Create an empty candidate pool
+                            </label>
+                        </div>
+                        <div class="mb-3 d-none">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="IsSharedLibrary" name="IsSharedLibrary" value="true">
+                                <label class="form-check-label" for="IsSharedLibrary">Shared</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color:#009966 ;color:#fff;opacity: 50%;">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Create</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <div class="modal fade" id="EditLibraryForm" tabindex="-1" role="dialog" aria-labelledby="editlibraryheader"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editlibraryheader">Edit Candidate Pool</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="editlibrary" class="needs-validation" method="post" asp-page-handler="UpdatePool" novalidate>
+                    <div class="modal-body">
+                        <input type="hidden" id="poolId" name="input.Id">
+                        <div class="mb-3">
+                            <label for="libraryName" class="form-label">Candidate Pool Name</label>
+                            <input type="text" name="input.Name" class="pool-name form-control" required />
+                            <div id="editnamefeedback" class="invalid-feedback">Field is required</div>
+                            <div>
+                                <span class="errorMsg nameError"></span>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="libraryDescription" class="form-label">Candidate Pool Description</label>
+                            <input type="text" name="input.Description" class="pool-description form-control" required />
+                            <div id="editdescriptionfeedback" class="invalid-feedback">Field is required</div>
+                        </div>
+                        <div class="mb-3 d-none">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" name="input.IsSharedLibrary" id="isshared" value="true">
+                                <label class="form-check-label" for="IsSharedLibrary">Is Shared</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color:#009966 ;color:#fff;opacity: 50%;">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Update</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    <div class="modal fade" id="importcandiates" tabindex="-1" role="dialog" aria-labelledby="importtreatmentlabel"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editlibraryheader">Import</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <form id="treatmentimportform" class="needs-validation" method="post" enctype="multipart/form-data" novalidate asp-page-handler="ImportWorkCandidates">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="libraries" class="form-label">Candidate Pool</label>
+                            <input class="form-control" type="text" name="candidatepool_name" id="candidatepool_name" readonly>
+                            <input class="form-control" type="hidden" name="PoolId" id="candidatepoolid">
+                        </div>
+                       
+                        <div class="mb-3">
+                            <label>
+                                <input type="radio" name="option" value="deleteAll" checked onchange="updateFromScratch()"> Delete All
+                                <input type="checkbox" id="fromScratch" name="fromScratch" checked value="true" hidden />
+                            </label> &nbsp;&nbsp;
+                            <label>
+                                <input type="radio" name="option" value="keepUserCreated" onchange="updateFromScratch()"> Keep User Created
+                            </label>  &nbsp;&nbsp;
+                            <label>
+                                <input type="radio" name="option" value="keepAll" onchange="updateFromScratch()"> Keep All
+                                <input type="checkbox" id="keepAll" name="keepAll" value="false" hidden />
+
+                            </label>
+
+                        </div>
+                        <div class="mb-3">
+                            <label for="formFile" class="form-label">Excel File</label>
+                            <input class="form-control" type="file" id="excelfile" name="excelfile" required
+                                   accept=".xlsx,.xls">
+                            <div id="excelvalidation" class="invalid-feedback">Field is required</div>
+                        </div>
+                        <div class="mb-3 d-none">
+                            <label for="formFile" class="form-label">Tab Name</label>
+                            <input class="form-control" type="text" name="tabname" value="WorkCandidates">
+                        </div>
+                        <div class="modal-footer">
+                            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color:#009966 ;color:#fff;opacity: 50%;">Cancel</button>
+                            <button type="submit" class="btn btn-primary">Import</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+
+    @{
+        var tableData = new List<object>();
+
+        foreach (var pool in Model.Pools)
+        {
+            tableData.Add(new { Id = pool.Id, Name = pool.Name, Description = pool.Description, UserId = pool.UserId.ToString(), CreatedBy = pool.CreatedBy, CreatedAt = pool.CreatedAt?.ToString("yyyy-MM-dd HH:mm:ss"), UpdatedBy = pool.UpdatedBy, UpdatedAt = pool.UpdatedAt?.ToString("yyyy-MM-dd HH:mm:ss"), IsSharedLibrary = pool.IsSharedLibrary.ToString(), SourcePoolId = pool.SourcePoolId?.ToString(), IsActive = pool.IsActive, ScenarioId = pool.ScenarioId, ScenarioName = pool.ScenarioName });
+    }
+
+    var jsonTableData = System.Text.Json.JsonSerializer.Serialize(tableData);
+        var permissions = new
+        {
+            ImportWorkCandidates = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.ImportWorkCandidates),
+            ImportConfiguration = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.ImportConfiguration),
+            WorkCandidates = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.WorkCandidates),
+            Configuration = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Configuration),
+            Run = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Run),
+            OutPuts = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.OutPut),
+            Projects = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Projects),
+            ExportProjectsOrCandidate = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.ExportProjectsOrCandidate),
+            Edit = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Edit),
+            Clear = await PermissionChecker.IsGrantedAsync(CandidatePoolsPermissions.PoolsPageActions.Clear)
+        };
+
+        var jsonPermissions = System.Text.Json.JsonSerializer.Serialize(permissions);
+}
+<script>
+        var tableData = @Html.Raw(jsonTableData);
+        var userPermissions = @Html.Raw(jsonPermissions);
+</script>
+
+
+    <script>        
+
+        $(document).on("keyup", '#createLibraryForm1 input[name=Name]', function (e) {
+            $("#createLibraryForm1 .nameError").text("");
+            $('#createLibraryForm1 button[type=submit]').removeAttr("disabled");
+        });
+
+        $(document).on("keyup", '#editlibrary input[name=Name]', function (e) {
+            $("#editlibrary .nameError").text("");
+            $('#editlibrary button[type=submit]').removeAttr("disabled");
+        });
+        
+        
+        $(document).on("submit", '#editlibrary', function (e) {
+            e.preventDefault();
+
+            $('#editlibrary button[type=submit]').attr("disabled", true);
+
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Page("/Pools/Index")?handler=UpdatePool',
+                data: formData,
+                dataType: "json",
+                success: function (response) {
+
+                    if (response.success) {
+                        console.log('Pool updated successfully!');
+                        $('#editlibrary button[type=submit]').removeAttr("disabled");
+                        location.reload();
+                    } else {
+                        $("#editlibrary .nameError").text(response.message);
+                        $('#editlibrary button[type=submit]').removeAttr("disabled");
+                    }
+
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error creating pool: ' + error);
+                }
+            });
+        });
+        
+        
+        $(document).on("submit", '#createLibraryForm1', function (e) {
+            e.preventDefault();
+
+            $('#createLibraryForm1 button[type=submit]').attr("disabled", true);
+
+            var formData = $(this).serialize();
+            $.ajax({
+                type: 'POST',
+                url: '@Url.Page("/Pools/Index")?handler=Create',
+                data: formData,
+                dataType: "json",
+                success: function (response) {
+
+                    if (response.success){
+                        console.log('Pool created successfully!');
+                        $('#createLibraryForm1 button[type=submit]').removeAttr("disabled");
+                        location.reload();
+                    }else{
+                        $("#createLibraryForm1 .nameError").text(response.message);
+                        $('#createLibraryForm1 button[type=submit]').removeAttr("disabled");
+                    }                 
+                   
+                },
+                error: function (xhr, status, error) {
+                    console.error('Error creating pool: ' + error);
+                }
+            });
+        });
+
+
+        function dropdownMenuFormatter(cell, formatterParams, onRendered) {
+                var dropdownHTML = `
+                        <div class="dropdown">
+                            <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown">
+                                <i context-menu="" class="fa-solid fa-ellipsis-vertical"></i>
+                            </button>
+                        </div>
+                    `;
+                return dropdownHTML;
+            }
+
+
+        function hasPermission(permission) {
+            return userPermissions[permission];
+        }
+                                                                   
+        var cellContextMenu = [
+            {
+                label: '<i class="fa-solid fa-file-import"></i> Import Work Candidates',
+                action: function (e, cell) {
+
+                    $.ajax({
+                        url: '/Pools/Index?handler=GetPool&id=' + cell.getData().Id,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data) {
+                            console.log('Pool data:', data);
+
+                            $("#importcandiates #candidatepool_name").val(data.name);
+                            $("#importcandiates #candidatepoolid").val(data.id);
+
+                            $("#importcandiates").modal("show");
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error fetching pool:', error);
+                            // Handle the error as needed
+                        }
+                    });
+                },
+                disabled: !hasPermission('ImportWorkCandidates')
+            },
+            {
+                label: '<i class="fa-solid fa-file-import"></i> Import Configuration',
+                action: function (e, cell) {
+                    window.location.href = '/Pools/PoolScoreParameters?poolId=' + cell.getData().Id + '&import=true';
+                },
+                disabled: !hasPermission('ImportConfiguration')
+            },
+            {
+                label: '<i class="fa-solid fa-pen-to-square"></i> Work Candidates',
+                action: function (e, cell) {
+                    window.location.href = "/WorkCandidates?id=" + cell.getData().Id;
+                },
+                disabled: !hasPermission('WorkCandidates')
+            },
+            {
+                label: '<i class="fa-solid fa-gear"></i> Configuration',
+                action: function (e, cell) {
+                    window.location.href = '/Pools/PoolScoreParameters?poolId=' + cell.getData().Id
+                },
+                disabled: !hasPermission('Configuration')
+            },
+            {
+                label: '<i class="fa-solid fa-chart-column"></i> Run',
+                action: function (e, cell) {
+                    c = confirm("Do you want to run?");
+                    console.log(cell);
+                    if (c)
+                        window.location.href = '/Scenarios/Index?handler=RunScenario&id=' + cell.getData().ScenarioId
+                },
+                disabled: function (component) {
+                    return !component.getData().ScenarioId;
+                },
+                disabled: !hasPermission('Run')
+            },
+            {
+                label: '<i class="fa-solid fa-arrow-up-from-bracket"></i> Output',
+                action: function (e, cell) {
+                    var poolId = cell.getData().Id;
+                    if (poolId) {
+                        window.location.href = 'Outputs/Maps?poolId=' + poolId;
+                    } else {
+                        console.error("poolId not available.");
+                    }
+                },
+                disabled: function (component) {
+                    return !component.getData().ScenarioId;
+                },
+                disabled: !hasPermission('OutPuts')
+            },
+            {
+                label: '<i class="fa-solid fa-folder"></i> Projects',
+                action: function (e, cell) {
+                    var poolId = cell.getData().Id; // Assuming Id is the poolId in your table data
+                    window.location.href = '/Outputs/PoolProject?poolId=' + poolId;
+                },
+                disabled: !hasPermission('Projects')
+            },
+            
+            
+            {
+                label: '<i class="fa-solid fa-file-export"></i> Export Projects & Candidates',
+                action: function (e, cell) {
+                    $("#exportScenario #Name").val(cell.getData().ScenarioName);
+                    $("#exportScenario #poolId").val(cell.getData().Id);
+                    $("#exportScenario").modal("show");
+                },
+                disabled: function (component) {
+                    return !component.getData().ScenarioId;
+                },
+                disabled: !hasPermission('ExportProjectsOrCandidate')
+            },
+           
+            {
+                label: '<i class="fa-solid fa-pen-to-square"></i> Edit',
+                action: function (e, cell) {
+                    console.log(cell.getData());
+                    console.log(e);
+
+                    $.ajax({
+                        url: '/Pools/Index?handler=GetPool&id=' + cell.getData().Id,
+                        type: 'GET',
+                        dataType: 'json',
+                        success: function (data) {
+                            console.log('Pool data:', data);
+                            // Display the data
+                            //$('#poolData').text(JSON.stringify(data));
+
+                            $("#EditLibraryForm .pool-name").val(data.name);
+                            $("#EditLibraryForm .pool-description").val(data.description);
+                            $("#EditLibraryForm #poolId").val(data.id);
+                            $("#EditLibraryForm #isshared").attr("checked", data.isActive);
+
+
+
+                            $("#EditLibraryForm").modal("show");
+                        },
+                        error: function (xhr, status, error) {
+                            console.error('Error fetching pool:', error);
+                            // Handle the error as needed
+                        }
+                    });
+                },
+                disabled: !hasPermission('Edit')
+            },
+
+         
+            
+           
+           
+            {
+                label: '<i class="fa-regular fa-trash-can"></i> Clear',
+                action: function (e, cell) {
+
+                    c = confirm("Do you want to clear?");
+
+                    if (c) {
+                        $.ajax({
+                            url: '/Pools/Index?handler=ClearPool&id=' + cell.getData().Id,
+                            type: 'GET',
+                            dataType: 'json',
+                            success: function (data) {
+                                console.log('Pool data:', data);
+
+                            },
+                            error: function (xhr, status, error) {
+                                console.error('Error fetching pool:', error);
+                            }
+                        });
+                    }
+                },
+                disabled: !hasPermission('Clear')
+            }
+
+
+        ];
+
+        var headerMenu = function () {
+            var menu = [];
+            var columns = this.getColumns();
+
+            columns.forEach(column => {
+                let icon = document.createElement("i");
+                icon.classList.add("fas");
+                icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+                let label = document.createElement("span");
+                let title = document.createElement("span");
+
+                title.textContent = " " + column.getDefinition().title;
+
+                label.appendChild(icon);
+                label.appendChild(title);
+
+                menu.push({
+                    label: label,
+                    action: function (e) {
+                        e.stopPropagation();
+
+                        column.toggle();
+
+                        // Change menu item icon
+                        if (column.isVisible()) {
+                            icon.classList.remove("fa-square");
+                            icon.classList.add("fa-check-square");
+                        } else {
+                            icon.classList.remove("fa-check-square");
+                            icon.classList.add("fa-square");
+                        }
+
+                        // Rebuild the menu to reflect changes
+                        column.getTable().redraw(true);
+                    }
+                });
+            });
+
+            return menu;
+        };
+       
+
+        function openEditModal() {
+            $('#EditLibraryForm').modal('show');
+        } function openCreateModal() {
+            $('#createLibraryForm1 button[type=submit]').removeAttr("disabled");
+            $('#CreateLibraryForm').modal('show');
+        }
+
+        var table = new Tabulator("#candidatepoolstable", {
+            layout: "fitDataFill",
+            resizableColumnFit: true,
+            data: tableData,
+            pagination: "local",
+            paginationSize: 6,
+            paginationSizeSelector: [3, 6, 8, 10],
+            movableColumns: true,
+            paginationCounter: "rows",
+            height:"500px",
+            initialSort: [
+                { column: "CreatedAt", dir: "desc" }
+            ],
+            columns: [
+                { title: "Name", field: "Name", width: "30%", headerMenu: headerMenu },
+                { title: "Description", width: "20%", field: "Description", headerMenu: headerMenu },
+            
+                { title: "Created At", field: "CreatedAt", width: "15%", headerMenu: headerMenu },
+               
+                { title: "Updated At", field: "UpdatedAt", width: "15%", headerMenu: headerMenu },
+     
+                { title: "Is Active", field: "IsActive", width: "15%", headerMenu: headerMenu },
+                { title: "Actions", field: "Actions", width: "10%", frozen: true, formatter: dropdownMenuFormatter, clickMenu: cellContextMenu },
+            ],
+        });
+
+    </script>
+
+<script>
+    $(document).ready(function () {
+        if (@Model.Import == true) {
+                $("#importcandiates #candidatepool_name").val('@Model.PoolName');
+                $("#importcandiates #candidatepoolid").val('@Model.PoolId');
+                $("#importcandiates").modal("show");
+        }
+
+       
+    });
+    </script>
+    @if (!Model.Pools.Any())
+    {
+        <script>
+            $(document).ready(function () {
+            $("#createLibraryForm1 button[type=submit]").removeAttr("disabled");
+            $("#CreateLibraryForm").modal("show");
+            });
+        </script>
+    }
+
+
+    <div class="modal fade" id="exportScenario" tabindex="-1" role="dialog" aria-labelledby="editlibraryheader"
+         aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" role="document">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editlibraryheader">Export Projects & Candidates</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+
+                <form id="" method="post" asp-page-handler="Export">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label for="Name" class="form-label">Candidate Pool Name</label>
+                            <input type="text" id="Name" class="form-control" required readonly />
+                            <input type="hidden" name="poolId" id="poolId" class="form-control" required readonly />
+                        </div>
+                        <div class="mb-3">
+                            <label for="Description" class="form-label">Relative efficiency threshold</label>
+                            <input name="effThreshold" id="effThreshold" type="text" class="form-control" required />
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color:#009966 ;color:#fff;opacity: 50%;">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Export</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+<style>
+        .errorMsg{
+            color:red;
+        }
+
+        .tabulator .tabulator-header {
+            background: #669999 !important;
+        }
+        .tabulator-popup-container{
+            height:auto !important;
+        }
+</style>    

@@ -1,0 +1,381 @@
+﻿@page
+@model DSS.Web.Pages.Outputs.ProjectsModel
+@{
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Outputs";
+    ViewData["SubMenu"] = "Reports";
+    ViewData["SubSubMenu"] = "Projects";
+    ViewData["poolId"] = Model.PoolId != Guid.Empty ? Model.PoolId.ToString() : "";
+}
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+<style>
+    .fa-message {
+        text-align: center;
+        padding: 20px;
+        border-radius: 5px;
+    }
+
+    .tabulator .tabulator-header {
+        background: #669999 !important;
+    }
+</style>
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Projects</h1>
+  
+    <div class="row">
+        <div class="col-md-4">
+            <div class="form-group">
+                <label for="selectPool">Select Candidate Pool:</label>
+                <div class="input-group">
+                    <select class="form-control form-control-sm" id="selectPool" name="PoolId">
+                        <option value=""><strong>-- Select Pool --</strong></option>
+                        @foreach (var pool in Model.Pools)
+                        {
+                            <option value="@pool.Id">@pool.Name</option>
+                        }
+                    </select>
+                    <div class="input-group-append">
+                        <button type="button" id="search" class="btn btn-primary" style="margin-left: 10px;">Search</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-md-6"></div>
+        <div class="col-md-2">
+            @if (Model.PoolName != null)
+            {
+                <span>Pool Name: </span> <span style="font-size: 14px; font-weight: bold;">@Model.PoolName</span>
+            }
+        </div>
+    </div>
+    <div class="fa-message">
+        <h2>Please Select Pool to See Data </h2>
+    </div>
+
+    <div class="card mb-4" style="margin-top:1%; display:none;">
+        <div class="card-body">
+
+            <div class="table-container">
+                <div id="projectCandidateTable"></div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+
+<div id="projectModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <form method="POST" asp-page-handler="UpdateProject">
+
+            <input type="hidden" name="input.PoolId" id="PoolId" placeholder="">
+            <input type="hidden" name="input.Id" id="Id" placeholder="">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Project</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">District</label>
+                            <input type="number" class="form-control" name="input.District" id="District" readonly placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">County</label>
+                            <input type="number" class="form-control" name="input.Cnty" id="Cnty" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Description</label>
+                            <input type="text" class="form-control" name="input.Description" id="Description" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Number Of Work Candidates</label>
+                            <input type="number" class="form-control" name="input.NumberOfWorkCandidates" id="NumberOfWorkCandidates" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Treatment</label>
+                            <input type="text" class="form-control" name="input.Treatment" id="Treatment" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Year Earliest</label>
+                            <input type="number" class="form-control" name="input.YearEarliest" id="YearEarliest" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Year Latest</label>
+                            <input type="number" class="form-control" name="input.YearLatest" id="YearLatest" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Total Cost</label>
+                            <input type="text" class="form-control" name="input.TotalCost" id="TotalCost" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Total Scaled Benefit</label>
+                            <input type="text" class="form-control" name="input.TotalScaledBenefit" id="TotalScaledBenefit" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Safety Score</label>
+                            <input type="text" class="form-control" name="input.SafetyScore" id="SafetyScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Mobility And Economy Score</label>
+                            <input type="text" class="form-control" name="input.MobilityAndEconomyScore" id="MobilityAndEconomyScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Equity And Access Score</label>
+                            <input type="text" class="form-control" name="input.EquityAndAccessScore" id="EquityAndAccessScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Resilience And Environment Score</label>
+                            <input type="text" class="form-control" name="input.ResilienceAndEnvironmentScore" id="ResilienceAndEnvironmentScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Condition And Performance Score</label>
+                            <input type="text" class="form-control" name="input.ConditionAndPerformanceScore" id="ConditionAndPerformanceScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Total Score</label>
+                            <input type="text" class="form-control" name="input.TotalScore" id="TotalScore" placeholder="">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Relative Efficiency</label>
+                            <input type="text" class="form-control" name="input.RelativeEfficiency" id="RelativeEfficiency" placeholder="">
+                        </div>
+                        <div class="col-md-3 d-none">
+                            <label for="input1" class="form-label">Relative Efficiency Set At</label>
+                            <input type="datetime" class="form-control" name="input.RelativeEfficiencySetAt" id="RelativeEfficiencySetAt" placeholder="">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning closeModal">Close</button>
+                    <button type="submit" class="btn btn-primary">Update</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+@{
+    var tableData = new List<object>();
+
+    foreach (var projectCandidate in Model.ProjectCandidates)
+    {
+        tableData.Add(new
+        {
+            PoolId = projectCandidate.PoolId,
+            AssetType = projectCandidate.AssetType,
+            Id = projectCandidate.Id,
+            District = projectCandidate.District,
+            Cnty = projectCandidate.Cnty,
+            CountyName = projectCandidate.Cnty + " - " + projectCandidate.CountyName,
+            Description = projectCandidate.Description,
+            NumberOfWorkCandidates = projectCandidate.NumberOfWorkCandidates,
+            Treatment = projectCandidate.Treatment,
+            YearEarliest = projectCandidate.YearEarliest,
+            YearLatest = projectCandidate.YearLatest,
+            TotalCost = projectCandidate.TotalCost,
+            TotalScaledBenefit = projectCandidate.TotalScaledBenefit?.ToString("N2"),
+            SafetyScore = projectCandidate.SafetyScore?.ToString("N2"),
+            MobilityAndEconomyScore = projectCandidate.MobilityAndEconomyScore?.ToString("N2"),
+            EquityAndAccessScore = projectCandidate.EquityAndAccessScore?.ToString("N2"),
+            ResilienceAndEnvironmentScore = projectCandidate.ResilienceAndEnvironmentScore?.ToString("N2"),
+            ConditionAndPerformanceScore = projectCandidate.ConditionAndPerformanceScore?.ToString("N2"),
+            TotalScore = projectCandidate.TotalScore?.ToString("N2"),
+            RelativeEfficiency = projectCandidate.RelativeEfficiency,
+            RelativeEfficiencySetAt = projectCandidate.RelativeEfficiencySetAt?.ToString("yyyy-MM-dd")
+        });
+    }
+
+    var jsonTableData = System.Text.Json.JsonSerializer.Serialize(tableData);
+}
+
+<script>
+    var tableData = @Html.Raw(jsonTableData);
+    var headerMenu = function () {
+        var menu = [];
+        var columns = this.getColumns();
+
+        columns.forEach(column => {
+            let icon = document.createElement("i");
+            icon.classList.add("fas");
+            icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+            let label = document.createElement("span");
+            let title = document.createElement("span");
+
+            title.textContent = " " + column.getDefinition().title;
+
+            label.appendChild(icon);
+            label.appendChild(title);
+
+            menu.push({
+                label: label,
+                action: function (e) {
+                    e.stopPropagation();
+
+                    column.toggle();
+
+                    // Change menu item icon
+                    if (column.isVisible()) {
+                        icon.classList.remove("fa-square");
+                        icon.classList.add("fa-check-square");
+                    } else {
+                        icon.classList.remove("fa-check-square");
+                        icon.classList.add("fa-square");
+                    }
+
+                    // Rebuild the menu to reflect changes
+                    column.getTable().redraw(true);
+                }
+            });
+        });
+
+        return menu;
+    };
+
+    function projectNameSorter(a, b, aRow, bRow, column, dir, sorterParams) {
+
+        var numA = parseInt(a.replace(/[^0-9]/g, ''), 10);
+        var numB = parseInt(b.replace(/[^0-9]/g, ''), 10);
+
+        numA = isNaN(numA) ? 0 : numA;
+        numB = isNaN(numB) ? 0 : numB;
+
+        return numA - numB; 
+    }
+
+    function formatMoneyWithDecimal(value) {
+        if (!isNaN(value) && value) {
+            return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 2 });
+        }
+        return value;
+    }
+
+    function formatMoney(value) {
+        if (!isNaN(value)) {
+            return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+        return value;
+    }
+
+
+    $(document).on("click", ".createBtn", function () {
+        $("#projectModal input[type=hidden]").val("");
+        $("#projectModal input[type=text]").val("");
+        $("#projectModal input[type=number]").val("");
+        $("#projectModal #PoolId").val("@Model.PoolId");
+        $("#projectModal #District").removeAttr("readonly");
+        $("#projectModal #Cnty").removeAttr("readonly");
+        $("#projectModal form").attr("action", "/Outputs/Projects?handler=CreateProject");
+        $("#projectModal").modal("show");
+    });
+
+    $(document).on("click", ".closeModal", function () {
+        $("#projectModal").modal("hide");
+    });
+</script>
+
+@if (Model.PoolName != null)
+{
+    <script>
+        $(document).ready(function () {
+            var tableData = @Html.Raw(jsonTableData);
+
+            if (tableData.length > 0) {
+                $(".fa-message").hide();
+
+                // Show the card
+                document.querySelector('.card').style.display = 'block';
+
+                // Initialize the Tabulator table
+                var table = new Tabulator("#projectCandidateTable", {
+                    layout: "fitDataFill",
+                    resizableColumnFit: true,
+                    data: tableData,
+                    pagination: "local",
+                    paginationSize: 10,
+                    paginationSizeSelector: [5, 10, 25],
+                    movableColumns: true,
+                    paginationCounter: "rows",
+                    height: "500px",
+                    columns: [
+                        { title: "Asset Type", field: "AssetType", headerMenu: headerMenu },
+                        { title: "District", field: "District", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "County", field: "CountyName", headerMenu: headerMenu },
+                        { title: "Description", field: "Description", headerMenu: headerMenu, sorter: projectNameSorter },
+                        { title: "Number Of Work Candidates", field: "NumberOfWorkCandidates", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Treatment", field: "Treatment", headerMenu: headerMenu },
+                        { title: "Year Earliest", field: "YearEarliest", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Year Latest", field: "YearLatest", headerMenu: headerMenu, hozAlign: "right" },
+                        {
+                            title: "Total Cost", field: "TotalCost", headerMenu: headerMenu, hozAlign: "right", formatter: function (cell, formatterParams, onRendered) {
+                    return formatMoney(cell.getValue());
+                } },
+                        { title: "Total Scaled Benefit", field: "TotalScaledBenefit", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Safety Score", field: "SafetyScore", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Mobility And Economy Score", field: "MobilityAndEconomyScore", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Equity And Access Score", field: "EquityAndAccessScore", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Resilience And Environment Score", field: "ResilienceAndEnvironmentScore", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Condition And Performance Score", field: "ConditionAndPerformanceScore", headerMenu: headerMenu, hozAlign: "right" },
+                        { title: "Total Score", field: "TotalScore", headerMenu: headerMenu, hozAlign: "right" },
+                        {
+                            title: "Relative Efficiency", field: "RelativeEfficiency", hozAlign: "right", headerMenu: headerMenu, formatter: function (cell, formatterParams, onRendered) {
+                                return formatMoneyWithDecimal(cell.getValue());
+                            }
+                        },
+                        { title: "Relative Efficiency Set At", field: "RelativeEfficiencySetAt", headerMenu: headerMenu },
+        @*  {
+                    title: "Actions",
+                    field: "Actions",
+                    width: 150,
+                    frozen: true,
+                    formatter: function (cell, formatterParams, onRendered) {
+                    return '<button class="editRowBtn"><i class="fas fa-pencil"></i></button>';
+                    },
+                    cellClick: function (e, cell) {
+
+                    // Redirect to WorkCandidates page with both id and Projectid parameters
+                    window.location.href = "/WorkCandidates?Projectid=" + cell.getData().Id;
+                    }
+                    } *@
+
+                            ],
+                });
+            } else {
+                $(".fa-message").html("<h2>This Pool didn't contain any data.</h2>").show();
+            }
+        });
+    </script>
+}
+
+<script>
+    $(document).ready(function () {
+        $('#search').on("click", function (e) {
+            var poolId = $('#selectPool').val();
+
+            $.ajax({
+                type: 'GET',
+                url: '/Outputs/Reports/Projects',
+                data: {
+                    poolId: poolId
+                },
+                success: function (response) {
+                    $('body').html(response);
+                    $('#selectPool').val(poolId);
+                },
+                error: function (xhr, status, error) {
+                    console.error('AJAX call failed');
+                    console.error(xhr.responseText);
+                    // Optionally handle errors or display a message
+                }
+            });
+        });
+    });
+</script>

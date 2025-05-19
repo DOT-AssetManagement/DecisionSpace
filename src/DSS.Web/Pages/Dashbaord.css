@@ -1,0 +1,47 @@
+﻿.card-body {
+    height: 300px;
+}
+
+.card {
+    font-family: 'Montserrat', sans-serif;
+}
+
+#card-1, #card-2 {
+    background-color: lightslategrey;
+}
+
+.container {
+    margin-top: 7%;
+}
+
+h1 {
+    margin-top: 20px; /* Adjust as needed */
+    text-align: center;
+    color: #fff;
+    font-weight: bold;
+}
+
+.card-1 {
+    margin-top: 30px;
+    text-align: center;
+    color: #fff;
+    font-size: 15px;
+    font-weight: bold;
+    letter-spacing: 3px;
+}
+
+.image {
+    height: 100%;
+    width: 100%;
+}
+
+p {
+    text-align: center;
+    color: #fff
+}
+
+
+
+.card-body-image {
+    padding: 0px !important;
+}

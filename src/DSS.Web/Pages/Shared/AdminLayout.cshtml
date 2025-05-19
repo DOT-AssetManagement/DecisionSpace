@@ -1,0 +1,290 @@
+﻿@inject Volo.Abp.UI.Navigation.MenuManager NavigationManager
+@using Microsoft.AspNetCore.Authorization
+@using Volo.Abp.Identity.Web.Pages.Identity.Users
+@using Volo.Abp.Users
+@inject IAuthorizationService AuthorizationService
+@inject ICurrentUser CurrentUser
+
+@{    
+    var mainMenu = await NavigationManager.GetMainMenuAsync();
+    var mainMenuItems = mainMenu.Items;
+
+    var mainMenuItemName = ViewData["Menu"];
+    var mainMenuItemSubMenu = ViewData["SubMenu"];
+    var mainMenuItemSubSubMenu = ViewData["SubSubMenu"];
+
+    object poolIdObj = ViewData["poolId"];
+    string poolId = string.Empty;
+    string currentUrl = Context.Request.Path;
+
+    if (poolIdObj != null && !string.IsNullOrEmpty(poolIdObj.ToString()))
+    {
+        poolId = poolIdObj.ToString();
+    }
+
+    var mainMenuItem = mainMenu.Items.FirstOrDefault(item => item.Name == mainMenuItemName);
+}
+
+@section scripts {
+    <abp-script src="/Pages/Index.js" />
+}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DSS</title>
+    <link href="~/css/styles.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css?family=Montserrat:400,700" rel="stylesheet">
+    <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
+
+    <link rel="stylesheet" href="~/libs/abp/core/abp.css" />
+
+    <script src="~/js/jquery-3.7.1.min.js"></script>
+    @RenderSection("styles", required: false)
+
+
+    <link rel="stylesheet" href="/libs/abp/core/abp.css" />
+
+    <link rel="stylesheet" href="/libs/toastr/toastr.min.css" />
+    <link rel="stylesheet" href="/libs/select2/css/select2.min.css" />
+    <link rel="stylesheet" href="/libs/malihu-custom-scrollbar-plugin/jquery.mCustomScrollbar.css" />
+    <link rel="stylesheet" href="/libs/datatables.net-bs5/css/dataTables.bootstrap5.css" />
+    <link rel="stylesheet" href="/libs/bootstrap-datepicker/bootstrap-datepicker.min.css" />
+    <link rel="stylesheet" href="/libs/bootstrap-daterangepicker/daterangepicker.css" />
+    <link rel="stylesheet" href="/libs/abp/aspnetcore-mvc-ui-theme-shared/datatables/datatables-styles.css" />
+    <link rel="stylesheet" href="/libs/abp/aspnetcore-mvc-ui-theme-shared/date-range-picker/date-range-picker-styles.css" />
+    <link rel="stylesheet" href="/global-styles.css" />
+
+
+
+</head>
+<body>
+
+    <nav class="sb-topnav navbar navbar-expand navbar-dark bg-white">
+
+        <a class="navbar-brand" href="#">
+            <img src="~/images/logo/leptonx/pennsylvania-logo.png" alt="Logo" class="img-fluid" />
+        </a>
+        <a class="navbar-brand" href="/Dashboard">
+            <img src="~/images/logo/DSS-LOGO.jpg" alt="Logo" class="img-fluid" />
+        </a>
+
+
+        <button class="btn btn-link btn-sm order-1 order-lg-0 me-4 me-lg-0 d-block d-sm-none" id="sidebarToggle" href="#!"><i class="fas fa-bars"></i></button>
+
+        <ul class="navbar-nav mx-auto d-none d-sm-block" style="margin-left: 75px !important;">
+
+                <li class="nav-item @(mainMenuItemName == "DSSAdminMenus.Setup" ? "active": "")">
+                    <a class="nav-link" href="#">Setup</a>
+                </li>
+                <li class="nav-item @(mainMenuItemName == "DSSAdminMenus.Tenant" ? "active": "")">
+                    <a class="nav-link" href="/TenantManagement/Tenants">Tenant Management</a>
+                </li>
+
+                <li class="nav-item @(mainMenuItemName == "DSSAdminMenus.Identity" ? "active": "")">
+                    <a class="nav-link" href="/Identity/Roles">Identity Management</a>
+                </li>
+
+                <li class="nav-item @(mainMenuItemName == "DSSAdminMenus.ImportScreen" ? "active": "")">
+                    <a class="nav-link" href="/ImportScreen">Import</a>
+                </li>
+
+                <li class="nav-item @(mainMenuItemName == "DSSAdminMenus.Settings" ? "active": "")">
+                    <a class="nav-link" href="/SettingManagement">Settings</a>
+                </li>
+           
+        </ul>
+
+        
+        <ul class="navbar-nav justify-content-end">
+            <li class="nav-item dropdown">
+                <a class="nav-link dropdown-toggle" id="navbarDropdown" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false"><i class="fas fa-user fa-fw"></i> Admin</a>
+                <ul class="dropdown-menu dropdown-menu-end" aria-labelledby="navbarDropdown">
+                    <li><a class="dropdown-item" href="/Account/Logout">Logout</a></li>
+                </ul>
+            </li>
+        </ul>
+    </nav>
+    <div id="layoutSidenav">
+        <div id="layoutSidenav_nav">
+            <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
+                <div class="sb-sidenav-menu">
+                    <div class="nav">
+
+                      
+                        @if (mainMenuItemName == "DSSAdminMenus.Identity")
+                        {
+                            <li class="nav-item mt-3">
+                                <a class="nav-link collapsed @(mainMenuItemSubMenu == "Roles" ? "active": "")" href="/Identity/Roles">
+                                    <div class="sb-nav-link-icon"></div>
+                                    Roles
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link collapsed @(mainMenuItemSubMenu == "Users" ? "active": "")" href="/Identity/Users">
+                                    <div class="sb-nav-link-icon"></div>
+                                    Users
+                                </a>
+                            </li>
+                        }
+                        else  @if (mainMenuItemName == "DSSAdminMenus.Setup")
+                        {
+                            <li class="nav-item mt-3">
+                                <a class="nav-link collapsed @(mainMenuItemSubMenu == "AssetTypeparameter" ? "active": "")" href="/Setup/AssetTypeparameter/List">
+                                    <div class="sb-nav-link-icon"></div>
+                                    Asset Type Parameters
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link collapsed @(mainMenuItemSubMenu == "OtherParameter" ? "active": "")" href="/Setup/OtherParameter/List">
+                                    <div class="sb-nav-link-icon"></div>
+                                    Other Parameter
+                                </a>
+                            </li>
+                            <li class="nav-item">
+                                <a class="nav-link collapsed @(mainMenuItemSubMenu == "Counties" ? "active": "")" href="/Setup/Counties">
+                                    <div class="sb-nav-link-icon"></div>
+                                    Counties
+                                </a>
+                            </li>
+                        }
+                        else
+
+                        {
+                            <style>
+                                #layoutSidenav #layoutSidenav_nav {
+                                    flex-basis: 50px !important;
+                                }
+                            </style>
+                        }
+
+
+    </div>
+    </div>
+    <div class="sb-sidenav-footer d-none">
+        <div class="small">Logged in as:</div>
+        Start Bootstrap
+    </div>
+    </nav>
+    </div>
+    <div id="layoutSidenav_content">
+        <main>
+                <div class="content-toolbar" id="AbpContentToolbar">
+                    @RenderSection("content_toolbar", required: false)
+                </div>
+                @RenderBody()
+
+        </main>
+        <footer class="py-4 bg-light mt-auto" style="background: #669999  !important;">
+            <div class="container-fluid px-4">
+                <div class="">
+                    <div class="text-muted align-items-center justify-content-between" style="color:#fff !important;    text-align: center;">
+                        PennDOT Decision Space (C) 2024 v1.0 ALL RIGHTS RESERVED
+                    </div>
+
+                </div>
+            </div>
+        </footer>
+    </div>
+    </div>
+
+
+    
+<script src="~/js/scripts.js"></script>
+
+   
+    
+<script src="/libs/abp/utils/abp-utils.umd.min.js"></script>
+<script src="/libs/abp/core/abp.js"></script>
+<script src="/libs/jquery/jquery.js"></script>
+<script src="/libs/abp/jquery/abp.jquery.js"></script>
+<script src="/libs/bootstrap/js/bootstrap.bundle.js"></script>
+<script src="/libs/lodash/lodash.min.js"></script>
+<script src="/libs/jquery-validation/jquery.validate.js"></script>
+<script src="/libs/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+<script src="/libs/jquery-form/jquery.form.min.js"></script>
+<script src="/libs/select2/js/select2.min.js"></script>
+<script src="/libs/datatables.net/js/jquery.dataTables.js"></script>
+<script src="/libs/datatables.net-bs5/js/dataTables.bootstrap5.js"></script>
+
+
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/ui-extensions.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/jquery/jquery-extensions.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/jquery-form/jquery-form-extensions.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/jquery/widget-manager.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/bootstrap/dom-event-handlers.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/bootstrap/modal-manager.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/datatables/datatables-extensions.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/sweetalert2/abp-sweetalert2.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/toastr/abp-toastr.js"></script>
+<script src="/libs/abp/aspnetcore-mvc-ui-theme-shared/date-range-picker/date-range-picker-extensions.js"></script>
+
+
+<script src="/Abp/ApplicationLocalizationScript?cultureName=en"></script>
+<script type="text/javascript" src="/Abp/ApplicationConfigurationScript"></script>
+<script type="text/javascript" src="/Abp/ServiceProxyScript"></script>
+
+    <style>
+        .sb-sidenav-menu .nav-item .nav-link.active {
+            font-weight: 800 !important;
+            color: white !important;
+        }
+
+        
+        .navbar-nav .nav-link {
+            color: black !important;
+        }
+
+            .navbar-nav .nav-link.active {
+                color: black !important;
+            }
+    </style>
+
+
+
+    <script>
+        setInterval(function () {
+            $(".tempDiv").remove();
+        }, 10000);
+
+        
+        $(document).on("click", ".nav-link", function () {
+            $(".nav-link").removeClass("active");
+            $(this).addClass("active");
+
+
+
+        });
+
+        $(document).ready(function () {
+            var currentPath = window.location.pathname.replace(/\/$/, "");
+
+            $('.nav-link').each(function () {
+                var menuItemUrl = $(this).attr('href');
+
+                var isCollapsed = $(this).hasClass('collapsed');
+                if (isCollapsed) {
+                    var submenuId = $(this).data('bs-target');
+                    var $submenu = $(submenuId);
+
+                    $submenu.find('.nav-link').each(function () {
+                        var subMenuItemUrl = $(this).attr('href');
+                        if (currentPath === subMenuItemUrl) {
+                            $(this).addClass('active');
+                            $(submenuId).addClass('show');
+                            $(this).closest('.nav-item').find('.nav-link').first().addClass('active');
+                        }
+                    });
+                } else {
+                    if (currentPath === menuItemUrl) {
+                        $(this).addClass('active');
+                        $(this).closest('.collapse').addClass('show');
+                    }
+                }
+            });
+        });
+    </script>
+    @RenderSection("scripts", required: false)
+</body>
+</html>

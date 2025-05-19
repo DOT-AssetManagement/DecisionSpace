@@ -1,0 +1,102 @@
+﻿@page
+@model DSS.Web.Pages.SetUp.CountiesModel
+@{
+    ViewData["Title"] = "Counties";
+    Layout = "Shared/AdminLayout";
+    ViewData["Menu"] = "DSSAdminMenus.Setup";
+    ViewData["SubMenu"] = "Counties";
+}
+
+
+
+<head>
+    <link rel="stylesheet" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+    <style>
+        .card {
+            margin-top: 20px;
+            width: 90%;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="mt-3" style="margin-left:2%">
+        <h1>Counties</h1>
+
+    </div>
+    <div class="card">
+        <div class="card-body">
+            <table id="countiesTable" class="table table-bordered table-striped" style="width:100%">
+                <thead>
+                    <tr>
+                        <th>District</th>
+                        <th>County</th>
+                        <th>Action</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var county in Model.Counties)
+                    {
+                        <tr>
+                            <td>@county.District</td>
+                            <td Cnty="@county.Cnty" CountyName="@county.CountyName">@county.CountyName</td>
+                            <td>
+                                <div class="btn-group" role="group">
+                                    <button class="btn btn-primary btn-sm editCounty" CntyId="@county.Cnty">Edit</button>
+                                </div>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+
+    </div>
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            $('#countiesTable').DataTable();
+
+
+            $('.editCounty').click(function () {
+
+                var CntyId = $(this).attr("CntyId");
+                $("#county").val($("td[cnty='" + CntyId + "']").text());
+                $('#countyModal').modal('show');
+            });
+
+            $(document).on("click", "#countyModal .closeBtn", function () {
+                $('#countyModal').modal('hide');
+            });
+        });
+    </script>
+
+    <div id="countyModal" class="modal fade" role="dialog">
+        <div class="modal-dialog">
+
+            <div class="modal-content">
+              
+                <div class="modal-body">
+                    <div class="form-group">
+                        <label for="county">County Name:</label>
+                        <input type="text" class="form-control" id="county">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary closeBtn">Close</button>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</body>
+</html>

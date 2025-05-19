@@ -1,0 +1,21 @@
+{
+  "culture": "en",
+  "texts": {
+    "Menu:Home": "Home",
+    "Menu:Configuration": "Configuration",
+    "Menu:LoadData": "LoadData",
+    "Menu:Measures": "Measures",
+    "Menu:Goals": "Goals",
+    "Menu:MeasureScaling": "Measure Scaling",
+    "Menu:MeasureParameters": "Measure Parameters",
+    "Menu:MeasureWeights": "Measure Weights",
+    "Menu:GoalWeights": "Goal Weights",
+    "Menu:Outputs": "Outputs",
+    "Menu:ProjectData": "Project Data",
+    "Menu:Projects": "Projects",
+    "Menu:ScaledMeasureValues": "Scaled Measure Values",
+    "Menu:Prioritization": "Prioritization",
+    "Welcome": "Welcome",
+    "LongWelcomeMessage": "Welcome to the application. This is a startup project based on the ABP framework. For more information, visit abp.io."
+  }
+}

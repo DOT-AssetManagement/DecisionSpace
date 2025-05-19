@@ -1,0 +1,412 @@
+﻿@page
+@using DSS.Permissions
+@using Volo.Abp.Authorization.Permissions
+@inject IPermissionChecker PermissionChecker
+@model DSS.Web.Pages.Pools.PoolScoreParametersModel
+@{
+    var Create = await PermissionChecker.IsGrantedAsync(ConfigurationPermissions.ConfigurationPageActions.Create);
+    var Import = await PermissionChecker.IsGrantedAsync(ConfigurationPermissions.ConfigurationPageActions.Import);
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Pools";
+}
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Configuration</h1>
+
+    <div class="card mb-4">
+        <div class="row">
+            <div class="col-md-2 offset-10">
+                <button class="btn btn-primary createBtn  @(Create ?"":"d-none")" style="float:right;margin-left: 10px;">Create</button>
+                <button class="btn btn-primary importBtn  @(Import ?"":"d-none")" style="float:right;">Import</button>
+            </div>
+        </div>
+        <div class="card-body">
+
+
+            <div class="table-container">
+
+
+
+                <div id="poolScoreParametersTable"></div>
+
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div id="poolScoreParametersModal" class="modal fade" role="dialog">
+    <div class="modal-dialog modal-lg">
+        <form method="POST" asp-page-handler="UpdatePoolScoreParameter">
+
+            <input type="hidden" name="input.PoolId" id="PoolId" placeholder="">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h4 class="modal-title">Configuration</h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Measure</label>
+                            <input type="text" class="form-control" name="input.Measure" id="Measure" readonly placeholder="" required>
+                            <span id="measureExistsMessage" class="text-danger"></span>
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Min.</label>
+                            <input type="text" class="form-control" name="input.Min" id="Min" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Score At Min.</label>
+                            <input type="text" class="form-control" name="input.ScoreAtMin" id="ScoreAtMin" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Max.</label>
+                            <input type="text" class="form-control" name="input.Max" id="Max" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Score At Max.</label>
+                            <input type="text" class="form-control" name="input.ScoreAtMax" id="ScoreAtMax" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Slope</label>
+                            <input type="text" class="form-control" name="input.Slope" id="Slope" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Safety Weight</label>
+                            <input type="text" class="form-control" name="input.SafetyWeight" id="SafetyWeight" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Mobility Weight</label>
+                            <input type="text" class="form-control" name="input.MobilityWeight" id="MobilityWeight" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Equity Weight</label>
+                            <input type="text" class="form-control" name="input.EquityWeight" id="EquityWeight" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Env. Weight</label>
+                            <input type="text" class="form-control" name="input.EnvWeight" id="EnvWeight" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-4">
+                            <label for="input1" class="form-label">Cond. Weight</label>
+                            <input type="text" class="form-control" name="input.CondWeight" id="CondWeight" placeholder="" oninput="validateDecimalInput(this)">
+                        </div>
+                        <div class="col-md-3 d-none">
+                            <label for="input1" class="form-label">Created By</label>
+                            <input type="text" class="form-control" name="input.CreatedBy" id="CreatedBy" placeholder="">
+                        </div>
+                        <div class="col-md-3 d-none">
+                            <label for="input1" class="form-label">Created At</label>
+                            <input type="text" class="form-control" name="input.CreatedAt" id="CreatedAt" placeholder="">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-warning closeModal" style="background-color:#009966 ;color:#fff;opacity: 50%;">Close</button>
+                    <button type="submit" class="btn btn-primary">Create</button>
+                </div>
+            </div>
+        </form>
+
+    </div>
+</div>
+
+<div class="modal fade" id="importPoolScoreParameters" tabindex="-1" role="dialog" aria-labelledby="importtreatmentlabel"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editlibraryheader">Import</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form id="treatmentimportform" class="needs-validation" method="post" enctype="multipart/form-data" novalidate asp-page-handler="ImportPoolScoreCandidates">
+                <div class="modal-body">
+
+                    <input class="form-control" type="hidden" name="PoolId" id="candidatepoolid" value="@Model.PoolId">
+                    <input class="form-control" type="hidden" name="CreatedBy" value="@Model.CreatedBy">
+                    <div class="mb-3">
+                        <label>
+                            <input type="radio" name="option" value="deleteAll" onchange="updateFromScratch()"> Delete All
+                        </label> &nbsp;&nbsp;
+                        <label>
+                            <input type="radio" name="option" value="keepUserCreated" onchange="updateFromScratch()"> Keep User Created
+                        </label> &nbsp;&nbsp;
+                        <label>
+                            <input type="radio" name="option" value="keepAll" onchange="updateFromScratch()"> Keep All
+                        </label>
+
+                    </div>
+                    <input type="hidden" id="deleteAllHidden" name="deleteAll" value="false" />
+                    <input type="hidden" id="keepAllHidden" name="keepAll" value="false" />
+                    <input type="hidden" id="keepuserCreatedHidden" name="keepuserCreated" value="false" />
+
+
+
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label">Excel File</label>
+                        <input class="form-control" type="file" id="excelfile" name="excelfile" required
+                               accept=".xlsx,.xls">
+                        <div id="excelvalidation" class="invalid-feedback">Field is required</div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="formFile" class="form-label">Tab Name</label>
+                        <input class="form-control" type="text" name="tabname" required>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="background-color:#009966 ;color:#fff;opacity: 50%;">Cancel</button>
+                        <button type="submit" class="btn btn-primary">Import</button>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<style>
+    .tabulator .tabulator-header {
+        background: #669999 !important;
+    }
+</style>
+
+@{
+    var tableData = new List<object>();
+    foreach (var poolScoreParameter in Model.PoolScoreParameters)
+    {
+        tableData.Add(new { PoolId = poolScoreParameter.PoolId, Measure = poolScoreParameter.Measure, Min = poolScoreParameter.Min, ScoreAtMin = poolScoreParameter.ScoreAtMin, Max = poolScoreParameter.Max, ScoreAtMax = poolScoreParameter.ScoreAtMax, Slope = poolScoreParameter.Slope.ToString("N2"), SafetyWeight = poolScoreParameter.SafetyWeight.ToString("N2"), MobilityWeight = poolScoreParameter.MobilityWeight.ToString("N2"), EquityWeight = poolScoreParameter.EquityWeight.ToString("N2"), EnvWeight = poolScoreParameter.EnvWeight.ToString("N2"), CondWeight = poolScoreParameter.CondWeight.ToString("N2"), CreatedBy = poolScoreParameter.CreatedBy, CreatedAt = poolScoreParameter.CreatedAt });
+    }
+    var jsonTableData = System.Text.Json.JsonSerializer.Serialize(tableData);
+
+    var permissions = new
+    {
+        Configuration = await PermissionChecker.IsGrantedAsync(ConfigurationPermissions.ConfigurationPageActions.Edit)
+    };
+
+    var jsonPermissions = System.Text.Json.JsonSerializer.Serialize(permissions);
+
+}
+<script>
+    var userPermissions = @Html.Raw(jsonPermissions);
+    var tableData = @Html.Raw(jsonTableData);
+
+    function hasPermission(permissionName) {
+        return userPermissions[permissionName];
+    }
+
+
+    function editMenuFormatter(cell, formatterParams, onRendered) {
+        var rowData = cell.getData();
+        var editHTML = `<button class="editRow" ${hasPermission('Configuration') ? '' : 'disabled'}><i class="fa-solid fa-pencil"></i></button>`;
+
+        onRendered(function () {
+            var icon = cell.getElement().querySelector(".editRow");
+            if (icon && hasPermission('Configuration')) {
+                icon.addEventListener("click", function (e) {
+                    e.stopPropagation();
+
+                    $("#poolScoreParametersModal form").attr("action", "/Pools/PoolScoreParameters?handler=UpdatePoolScoreParameter");
+                    $("#poolScoreParametersModal #Measure").attr("readonly", "true");
+                    $("#poolScoreParametersModal #PoolId").val(rowData.PoolId);
+                    $("#poolScoreParametersModal #Measure").val(rowData.Measure);
+                    $("#poolScoreParametersModal #Min").val(rowData.Min);
+                    $("#poolScoreParametersModal #ScoreAtMin").val(rowData.ScoreAtMin);
+                    $("#poolScoreParametersModal #Max").val(rowData.Max);
+                    $("#poolScoreParametersModal #ScoreAtMax").val(rowData.ScoreAtMax);
+                    $("#poolScoreParametersModal #Slope").val(rowData.Slope);
+                    $("#poolScoreParametersModal #SafetyWeight").val(rowData.SafetyWeight);
+                    $("#poolScoreParametersModal #MobilityWeight").val(rowData.MobilityWeight);
+                    $("#poolScoreParametersModal #EquityWeight").val(rowData.EquityWeight);
+                    $("#poolScoreParametersModal #EnvWeight").val(rowData.EnvWeight);
+                    $("#poolScoreParametersModal #CondWeight").val(rowData.CondWeight);
+                    $("#poolScoreParametersModal #CreatedBy").val(rowData.CreatedBy);
+                    $("#poolScoreParametersModal #CreatedAt").val(rowData.CreatedAt);
+                    $("#poolScoreParametersModal button[type=submit]").text("Update");
+                    $("#poolScoreParametersModal").modal("show");
+                });
+            }
+        });
+
+        return editHTML;
+    }
+
+    function formatMoney(value) {
+        if (!isNaN(value)) {
+            return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+        return value;
+    }
+
+    function validateDecimalInput(input) {
+        input.value = input.value.replace(/[^0-9.]/g, '');
+
+        input.value = input.value.replace(/(\..*)\./g, '$1');
+
+        input.value = input.value.replace(/^(\d+)\.(\d\d).*$/, '$1.$2');
+    }
+
+    var headerMenu = function () {
+        var menu = [];
+        var columns = this.getColumns();
+
+        columns.forEach(column => {
+            let icon = document.createElement("i");
+            icon.classList.add("fas");
+            icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+            let label = document.createElement("span");
+            let title = document.createElement("span");
+
+            title.textContent = " " + column.getDefinition().title;
+
+            label.appendChild(icon);
+            label.appendChild(title);
+
+            menu.push({
+                label: label,
+                action: function (e) {
+                    e.stopPropagation();
+
+                    column.toggle();
+
+                    // Change menu item icon
+                    if (column.isVisible()) {
+                        icon.classList.remove("fa-square");
+                        icon.classList.add("fa-check-square");
+                    } else {
+                        icon.classList.remove("fa-check-square");
+                        icon.classList.add("fa-square");
+                    }
+
+                    // Rebuild the menu to reflect changes
+                    column.getTable().redraw(true);
+                }
+            });
+        });
+
+        return menu;
+    };
+
+    var table = new Tabulator("#poolScoreParametersTable", {
+        layout: "fitDataFill",
+        resizableColumnFit: true,
+        data: tableData,
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [5, 10, 25],
+        movableColumns: true,
+        paginationCounter: "rows",
+        height: "500px",
+        columns: [
+            { title: "Measure", field: "Measure", headerMenu: headerMenu },
+            { title: "Min.", field: "Min", headerMenu: headerMenu },
+            { title: "Score At Min.", field: "ScoreAtMin", headerMenu: headerMenu },
+            {
+                title: "Max.", field: "Max", headerMenu: headerMenu, formatter: function (cell, formatterParams, onRendered) {
+                    return formatMoney(cell.getValue());
+                }
+            },
+            {
+                title: "Score At Max.", field: "ScoreAtMax", headerMenu: headerMenu, formatter: function (cell, formatterParams, onRendered) {
+                    return formatMoney(cell.getValue());
+                }
+            },
+            { title: "Slope", field: "Slope", formatter: "money", headerMenu: headerMenu },
+            { title: "Safety Weight", field: "SafetyWeight", formatter: "money", headerMenu: headerMenu },
+            { title: "Mobility Weight", field: "MobilityWeight", formatter: "money", headerMenu: headerMenu },
+            { title: "Equity Weight", field: "EquityWeight", formatter: "money", headerMenu: headerMenu },
+            { title: "Env. Weight", field: "EnvWeight", formatter: "money", headerMenu: headerMenu },
+            { title: "Cond. Weight", field: "CondWeight", formatter: "money", headerMenu: headerMenu },
+            { title: "Created By", field: "CreatedBy", headerMenu: headerMenu },
+            { title: "Created At", field: "CreatedAt", headerMenu: headerMenu },
+            { title: "Actions", field: "Actions", frozen: true, formatter: editMenuFormatter },
+        ],
+    });
+</script>
+
+<script>
+    $(document).ready(function () {
+        if (@Model.Import == true) {
+            $("#importPoolScoreParameters").modal("show");
+        }
+    });
+    $(document).on("click", ".importBtn", function () {
+        $("#importPoolScoreParameters").modal("show");
+    });
+
+    $(document).on("click", ".createBtn", function () {
+        $("#measureExistsMessage").text("");
+        $("#poolScoreParametersModal input[type=hidden]").val("");
+        $("#poolScoreParametersModal input[type=text]").val("");
+        $("#poolScoreParametersModal #PoolId").val("@Model.PoolId");
+        $("#poolScoreParametersModal #CreatedAt").val("@Model.CreatedAt");
+        $("#poolScoreParametersModal #CreatedBy").val("@Model.CreatedBy");
+        $("#poolScoreParametersModal #Measure").removeAttr("readonly");
+        $("#poolScoreParametersModal form").submit(function (event) {
+            event.preventDefault();
+            var formData = $(this).serialize();
+            $(this).attr("action", "/Pools/PoolScoreParameters?handler=CheckMeasureExists");
+            $.post($(this).attr("action"), formData)
+                .done(function (response) {
+                    if (response.exists) {
+                        $("#measureExistsMessage").text("Measure Name already exists.");
+
+                    } else {
+
+                        $("#poolScoreParametersModal form").attr("action", "/Pools/PoolScoreParameters?handler=CreatePoolScoreParameter");
+                        $("#poolScoreParametersModal form").unbind('submit').submit();
+                    }
+                })
+                .fail(function () {
+                    console.error('Error checking measure existence.');
+                });
+        });
+        $("#poolScoreParametersModal button[type=submit]").text("Create");
+        $("#poolScoreParametersModal").modal("show");
+    });
+
+    $(document).on("click", ".closeModal", function () {
+        $("#poolScoreParametersModal").modal("hide");
+    });
+
+
+    $("#Measure").on("input", function () {
+        $("#measureExistsMessage").text("");
+    });
+
+
+
+</script>
+
+<script>
+    function updateFromScratch() {
+        var fromScratchValue = document.querySelector('input[name="option"]:checked').value;
+        var deleteAllHidden = document.getElementById("deleteAllHidden");
+        var keepAllHidden = document.getElementById("keepAllHidden");
+        var keepuserCreatedHidden = document.getElementById("keepuserCreatedHidden");
+
+        // Reset all hidden inputs to false initially
+        deleteAllHidden.value = "false";
+        keepAllHidden.value = "false";
+        keepuserCreatedHidden.value = "false";
+
+        // Update the appropriate hidden input based on the selected radio button
+        if (fromScratchValue === "deleteAll") {
+            deleteAllHidden.value = "true";
+        } else if (fromScratchValue === "keepUserCreated") {
+            keepuserCreatedHidden.value = "true";
+            deleteAllHidden.value = "true";
+        } else if (fromScratchValue === "keepAll") {
+            keepAllHidden.value = "true";
+        }
+    }
+
+
+</script>

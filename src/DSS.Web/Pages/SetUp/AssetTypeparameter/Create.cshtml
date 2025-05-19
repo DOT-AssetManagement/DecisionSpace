@@ -1,0 +1,50 @@
+﻿@page
+@model DSS.Web.Pages.SetUp.CreateModel
+@{
+    Layout = "Shared/AdminLayout";
+    ViewData["Menu"] = "DSSAdminMenus.Setup";
+    ViewData["SubMenu"] = "AssetTypeparameter";
+}
+
+@{
+    ViewData["Title"] = "Create Asset Type Parameter Data";
+}
+    
+<div class="card mt-5" style="width:70%;margin-left:10%">
+    <div class="card-body">
+        <div class="card-header">
+            <h2>Create Asset Type Parameter</h2>
+        </div>
+        <form method="post" asp-page-handler="CreateAsset">
+            <div class="form-group">
+                <label class="control-label">Asset Type</label><br />
+                <input type="text" class="form-control" required="" placeholder="AssetType" name="AssetType" value="">
+            </div><br />
+            <div class="form-group">
+                <label class="control-label">Benefit Scaling Factor</label><br />
+                <input type="number" class="form-control" required="" placeholder="Benefit Scaling Factor" name="BenefitScalingFactor" value="">
+            </div><br />
+            <div class="form-group">
+                <label class="control-label">Scenario</label><br />
+                <select class="form-control" name="ScenarioId">
+                    <option value="">Select Scenario</option>
+                    @foreach (var scenario in Model.Scenarios)
+                    {
+                        <option value="@scenario.Id">@scenario.ScenName</option>
+                    }
+                </select>
+            </div><br />
+            <input type="hidden" name="SelectedScenarioId" id="selectedScenarioId" value="">
+            <button type="submit" class="btn btn-primary" onclick="setSelectedScenarioId()">Create</button>
+        </form>
+    </div>
+</div>
+
+        <script>
+        function setSelectedScenarioId() {
+            var selectedScenarioId = document.querySelector('select[name="ScenarioId"]').value;
+            document.getElementById('selectedScenarioId').value = selectedScenarioId;
+        }
+</script>
+
+

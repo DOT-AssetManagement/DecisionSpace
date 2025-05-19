@@ -1,0 +1,90 @@
+﻿@page
+@model DSS.Web.Pages.Outputs.MapsModel
+@{
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Outputs";
+    ViewData["SubMenu"] = "Maps";
+    ViewData["poolId"] = Model.PoolId != Guid.Empty ? Model.PoolId.ToString() : "";
+
+}
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Maps</h1>
+ 
+    <div class="card mb-4">
+        <div class="card-body">
+
+            <div class="row">
+                <div class="col-md-4">
+                    
+                        <form method="get" class="row">
+                            <div class="form-group col-md-8">
+                                <label for="scenarioSelect">Select Candidate Pool:</label>
+                                <div class="input-group">
+                                <select class="form-control form-control-sm" id="scenarioSelect" name="poolId">
+                                    <option value=""><strong>-- Select Candidate Pool --</strong></option>
+                                    @foreach (var pool in Model.Pools)
+                                    {
+                                        @if (pool.Id == Model.PoolId)
+                                        {
+                                            <option value="@pool.Id" selected>@pool.Name</option>
+                                        }
+                                        else
+                                        {
+                                            <option value="@pool.Id">@pool.Name</option>
+                                        }
+
+                                    }
+                                </select>
+                                </div>
+                            </div>
+                            <div class="form-group col-md-4" style="margin-top:-2%">
+                                <button type="submit" class="btn btn-primary" style="margin-top: 32px;">Search</button>
+                            </div>
+                        </form>
+                  
+                </div>
+                <div class="col-md-6"></div>
+                <div class="col-md-2">
+                    @if (Model.ScenarioName != null)
+                    {
+                        <span style="font-size: 20px; font-weight: bold;">@Model.ScenarioName</span>
+                    }
+                </div>
+            </div>
+            <div id="maps_main-response" style="height:700px;overflow-y: scroll;display:none">
+
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+        var jsonString = `@Html.Raw(Model.GisJsonString)`;
+        jsonString = jsonString.replace(/\\r\\n/g, "");
+        var data = JSON.parse(jsonString);
+        console.log(data);
+        $.ajax({
+            type: 'POST',
+            data: JSON.stringify(data),
+            dataType: "json",
+            url: "https://gis.bergmannpc.com/ProjectBuilderMap/api/scenarios",
+            contentType: 'application/json',
+            beforeSend: function () {
+               
+            },
+            success: function (data) {
+                console.log(data);
+                if (data.MapViewerUrl) {
+                    $("#maps_main-response").show();
+                    $("#maps_main-response").html("<iframe src='" + data.MapViewerUrl + "' width='100%' height='100%'>");
+                }
+            },
+            complete: function () {
+            },
+        });
+</script>

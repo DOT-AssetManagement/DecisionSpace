@@ -1,0 +1,442 @@
+﻿@page
+@using DSS.Permissions
+@using Volo.Abp.Authorization.Permissions
+@inject IPermissionChecker PermissionChecker
+@model DSS.Web.Pages.WorkCandidates.IndexModel
+@{
+    var Create = await PermissionChecker.IsGrantedAsync(ProjectWorkCandidatePermissions.ProjectWorkCandidatePageActions.Create);
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Pools";
+}
+<link href="https://unpkg.com/tabulator-tables/dist/css/tabulator.min.css" rel="stylesheet">
+<link href="~/css/tabulator_bootstrap5.css" rel="stylesheet">
+<script type="text/javascript" src="https://unpkg.com/tabulator-tables/dist/js/tabulator.min.js"></script>
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Project Work Candidates</h1>
+
+    <div class="card mb-4">
+        <div class="row">
+            <div class="col-md-2 offset-10 p-3 @(Create?"":"d-none")">
+                <a class="btn btn-primary" href="/WorkCandidates/Create?id=@Model.PoolId" style="float:right;">Create New Work Candidate</a>
+            </div>
+        </div>
+
+        <div class="card-body">
+
+            <div class="candidatepools_maincontent-container">
+
+                <div class="candidatepools_maincontent">
+                    <input id="userRole" type="hidden" value="Operator">
+                    <div class="card">
+                        <div class="card-body">
+                            <div>
+                                <div id="" class="dataTables_wrapper no-footer">
+                                    <div id="workCandidatesTable"></div>
+
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </div>
+</div>
+
+
+<div class="modal fade" id="workCandidatesModal" tabindex="-1" role="dialog" aria-labelledby="editlibraryheader"
+     aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-xl" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editlibraryheader">Work Candidates</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+
+            <form method="POST" asp-page-handler="Update">
+                <input type="hidden" id="WorkCandidateId" name="id" />
+                <input type="hidden" id="PoolId" name="PoolId" value="@Model.PoolId" />
+                <div class="modal-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">ProjectName</label>
+                            <input type="text" class="form-control" name="input.ProjectName" id="ProjectName">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">District</label>
+                            <input type="text" class="form-control" name="input.District" id="District">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Cnty</label>
+                            <input type="text" class="form-control" name="input.Cnty" id="Cnty">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Route</label>
+                            <input type="text" class="form-control" name="input.Route" id="Route">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">AssetType</label>
+                            <input type="text" class="form-control" name="input.AssetType" id="AssetType">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">FromSection</label>
+                            <input type="text" class="form-control" name="input.FromSection" id="FromSection">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">ToSection</label>
+                            <input type="text" class="form-control" name="input.ToSection" id="ToSection">
+                        </div>
+
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">BRIDGE_ID</label>
+                            <input type="text" class="form-control" name="input.BRIDGE_ID" id="BRIDGE_ID">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Description</label>
+                            <input type="text" class="form-control" name="input.Description" id="Description">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Cost</label>
+                            <input type="text" class="form-control" name="input.Cost" id="Cost">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Predicted_Scaled_Benefit</label>
+                            <input type="text" class="form-control" name="input.Predicted_Scaled_Benefit" id="Predicted_Scaled_Benefit">
+                        </div>
+                        <div class="col-md-3">
+                            <label for="input1" class="form-label">Total_Score</label>
+                            <input type="text" class="form-control" name="input.Total_Score" id="Total_Score">
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </div>
+            </form>
+
+        </div>
+    </div>
+
+</div>
+
+<style>
+    .full-width-header .tabulator-col {
+        width: 100% !important;
+    }
+
+    .tabulator .tabulator-header {
+        background: #669999 !important;
+    }
+
+    .wrap-text {
+        white-space: normal !important;
+        word-wrap: break-word;
+    }
+</style>
+@{
+    var tableData = new List<object>();
+
+    foreach (var workCandidate in Model.WorkCandidates)
+    {
+        tableData.Add(new
+        {
+            Id = workCandidate.Id,
+            ImportSessionId = workCandidate.ImportSessionId,
+            PoolId = workCandidate.PoolId,
+            ImportTimeGeneratedId = workCandidate.ImportTimeGeneratedId,
+            ProjectCandidateId = workCandidate.ProjectCandidateId,
+            ProjectName = workCandidate.ProjectName,
+            District = workCandidate.District,
+            Cnty = workCandidate.Cnty,
+            Route = workCandidate.Route,
+            AssetType = workCandidate.AssetType,
+            FromSection = workCandidate.FromSection,
+            ToSection = workCandidate.ToSection,
+            BRKEY = workCandidate.BRKEY,
+            BRIDGE_ID = workCandidate.BRIDGE_ID,
+            Description = workCandidate.Description,
+            Cost = workCandidate.Cost,
+            Predicted_Scaled_Benefit = workCandidate.Predicted_Scaled_Benefit?.ToString("N2"),
+            Total_Score = workCandidate.Total_Score?.ToString("N2"),
+            HSIP_Eligible = workCandidate.HSIP_Eligible,
+            Excess_Safety_Value = workCandidate.Excess_Safety_Value?.ToString("N2"),
+            Supported_by_RSA_Safety_Study = workCandidate.Supported_by_RSA_Safety_Study,
+            Degree_of_Safety_Improvement = workCandidate.Degree_of_Safety_Improvement,
+            Supports_Hazard_Mitigation = workCandidate.Supports_Hazard_Mitigation,
+            Improves_Access_to_Emergency_Services = workCandidate.Improves_Access_to_Emergency_Services,
+            Predicted_Safety_Benefit = workCandidate.Predicted_Safety_Benefit?.ToString("N2"),
+            Safety_Score = workCandidate.Safety_Score?.ToString("N2"),
+            Travel_Time_Savings = workCandidate.Travel_Time_Savings,
+            Operating_Cost_Savings = workCandidate.Operating_Cost_Savings,
+            Degree_of_Mobility_Improvement = workCandidate.Degree_of_Mobility_Improvement,
+            Freight_Improvement = workCandidate.Freight_Improvement,
+            Facilitates_Transit_Use = workCandidate.Facilitates_Transit_Use,
+            Facilitates_Active_Transportation = workCandidate.Facilitates_Active_Transportation,
+            Bike_Lanes_Constructed = workCandidate.Bike_Lanes_Constructed,
+            New_Cyclists = workCandidate.New_Cyclists,
+            Support_for_Job_Growth = workCandidate.Support_for_Job_Growth,
+            Support_for_Tourism = workCandidate.Support_for_Tourism,
+            Support_for_Economic_Goals = workCandidate.Support_for_Economic_Goals,
+            Support_for_Recreation = workCandidate.Support_for_Recreation,
+            Consistency_with_Existing_Plans = workCandidate.Consistency_with_Existing_Plans,
+            Predicted_Mobility_Benefit = workCandidate.Predicted_Mobility_Benefit,
+            Mobility_and_Access_Score = workCandidate.Mobility_and_Access_Score?.ToString("N2"),
+            Sidewalks_and_Curb_Ramps_Constructed_or_Improved = workCandidate.Sidewalks_and_Curb_Ramps_Constructed_or_Improved,
+            Change_in_Accessible_Destinations = workCandidate.Change_in_Accessible_Destinations,
+            Percent_of_Acessibilty_Improvement_for_Disadvantaged_Populations = workCandidate.Percent_of_Acessibilty_Improvement_for_Disadvantaged_Populations,
+            Support_for_Environmental_Justice = workCandidate.Support_for_Environmental_Justice,
+            Predicted_Equity_and_Access_Benefit = workCandidate.Predicted_Equity_and_Access_Benefit,
+            Equity_and_Access_Score = workCandidate.Equity_and_Access_Score?.ToString("N2"),
+            Reduced_Flood_Closure_Risk = workCandidate.Reduced_Flood_Closure_Risk,
+            Wetlands_Improved = workCandidate.Wetlands_Improved,
+            Wildlife_Crossings = workCandidate.Wildlife_Crossings,
+            Reduced_Fuel_Consumption = workCandidate.Reduced_Fuel_Consumption,
+            Degree_of_Environmental_Improvement = workCandidate.Degree_of_Environmental_Improvement,
+            Predicted_Environmental_Benefit = workCandidate.Predicted_Environmental_Benefit,
+            Resilience_and_Environment_Score = workCandidate.Resilience_and_Environment_Score?.ToString("N2"),
+            Consistency_with_Land_Use_Plans = workCandidate.Consistency_with_Land_Use_Plans,
+            Pavement_Rehabilitated_or_Reconstructed = workCandidate.Pavement_Rehabilitated_or_Reconstructed,
+            Bridges_Rehabilitated_or_Replaced = workCandidate.Bridges_Rehabilitated_or_Replaced,
+            Culverts_Rehabilitated_or_Replaced = workCandidate.Culverts_Rehabilitated_or_Replaced,
+            Guardrail_Rehabilitated_or_Replaced = workCandidate.Guardrail_Rehabilitated_or_Replaced,
+            Geotechnical_Assets_Rehabilitated_or_Replaced = workCandidate.Geotechnical_Assets_Rehabilitated_or_Replaced,
+            Facilities_Rehabilitated_or_Reconstructed = workCandidate.Facilities_Rehabilitated_or_Reconstructed,
+            Sidewalks_Rehabilitated_or_Reconstructed = workCandidate.Sidewalks_Rehabilitated_or_Reconstructed,
+            Predicted_Condition_and_Performance_Benefit = workCandidate.Predicted_Condition_and_Performance_Benefit,
+            Condition_and_Performance_Score = workCandidate.Condition_and_Performance_Score?.ToString("N2"),
+            ADT = workCandidate.ADT,
+            Percent_Trucks = workCandidate.Percent_Trucks,
+            Population_Density = workCandidate.Population_Density,
+            Bike_Commute_Share = workCandidate.Bike_Commute_Share,
+            BPN = workCandidate.BPN,
+            Length = workCandidate.Length,
+            Speed_Limit = workCandidate.Speed_Limit,
+            Detour_Distance = workCandidate.Detour_Distance,
+            Functional_Classification = workCandidate.Functional_Classification,
+            National_Highway_System = workCandidate.National_Highway_System,
+            Pennsylvania_Byway = workCandidate.Pennsylvania_Byway,
+            Bicycle_PA_Route = workCandidate.Bicycle_PA_Route,
+            Interstate_Emergency_Detour = workCandidate.Interstate_Emergency_Detour,
+            LFAR_BOF_Eligible = workCandidate.LFAR_BOF_Eligible,
+            CreatedBy = workCandidate.CreatedBy,
+            CreatedAt = workCandidate.CreatedAt,
+            Treatment = workCandidate.Treatment,
+            BenefitsComputedAt = workCandidate.BenefitsComputedAt,
+            ScoresComputedAt = workCandidate.ScoresComputedAt,
+            Year = workCandidate.Year,
+            MinYear = workCandidate.MinYear,
+            MaxYear = workCandidate.MaxYear
+
+        });
+    }
+
+    var jsonTableData = System.Text.Json.JsonSerializer.Serialize(tableData);
+
+
+    var permissions = new
+    {
+        Edit = await PermissionChecker.IsGrantedAsync(ProjectWorkCandidatePermissions.ProjectWorkCandidatePageActions.Edit),
+        Delete = await PermissionChecker.IsGrantedAsync(ProjectWorkCandidatePermissions.ProjectWorkCandidatePageActions.Delete)
+    };
+
+    var jsonPermissions = System.Text.Json.JsonSerializer.Serialize(permissions);
+}
+<script>
+    var tableData = @Html.Raw(jsonTableData);
+    var userPermissions = @Html.Raw(jsonPermissions);
+
+    function hasPermission(permissionName) {
+        return userPermissions[permissionName];
+    }
+
+    function editMenuFormatter(cell, formatterParams, onRendered) {
+
+        var rowData = cell.getData();
+
+        var editHTML = hasPermission('Edit')
+            ? `<a style="color:#1c305c" href="/WorkCandidates/Create?id=@Model.PoolId&candidateId=${rowData.Id}"><i context-menu="" class="fa-solid fa-pencil"></i></a>`
+            : `<button class="editRow" disabled><i class="fa-solid fa-pencil"></i></button>`;
+
+        editHTML += hasPermission('Delete')
+            ? ` <a style="color:#1c305c" class="deleteRow ml-1" style="margin-left:10px;"><i context-menu="" class="fa-solid fa-trash"></i></a>`
+            : `<button class="deleteRow" disabled><i class="fa-solid fa-trash"></i></button>`;
+
+
+
+        onRendered(function () {
+            var icon = cell.getElement().querySelector(".editRow");
+            var deleteIcon = cell.getElement().querySelector(".deleteRow");
+            if (icon) {
+                icon.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    console.log("Row data:", rowData);
+
+                    $("#workCandidatesModal form").attr("action", "/WorkCandidates?handler=Update");
+
+
+                    $("#workCandidatesModal #WorkCandidateId").val(rowData.Id);
+                    $("#workCandidatesModal #ProjectName").val(rowData.ProjectName);
+                    $("#workCandidatesModal #District").val(rowData.District);
+                    $("#workCandidatesModal #Cnty").val(rowData.Cnty);
+                    $("#workCandidatesModal #Route").val(rowData.Route);
+                    $("#workCandidatesModal #AssetType").val(rowData.AssetType);
+                    $("#workCandidatesModal #FromSection").val(rowData.FromSection);
+                    $("#workCandidatesModal #ToSection").val(rowData.ToSection);
+                    $("#workCandidatesModal #BRKEY").val(rowData.BRKEY);
+                    $("#workCandidatesModal #BRIDGE_ID").val(rowData.BRIDGE_ID);
+                    $("#workCandidatesModal #Description").val(rowData.Description);
+                    $("#workCandidatesModal #Cost").val(rowData.Cost);
+                    $("#workCandidatesModal #Predicted_Scaled_Benefit").val(rowData.Predicted_Scaled_Benefit);
+                    $("#workCandidatesModal #Total_Score").val(rowData.Total_Score);
+                    $("#workCandidatesModal #Safety_Score").val(rowData.Safety_Score);
+                    $("#workCandidatesModal #Treatment").val(rowData.Treatment);
+                    $("#workCandidatesModal").modal("show");
+                });
+            }
+
+            if (deleteIcon) {
+                deleteIcon.addEventListener("click", function (e) {
+                    e.stopPropagation();
+                    console.log("Row data:", rowData);
+
+                    c = confirm("Do you want to delete?")
+                    if (c) {
+                        window.location.href = "/WorkCandidates?handler=Delete&id=" + rowData.Id + "&PoolId=@Model.PoolId";
+                    }
+                });
+            }
+        });
+
+
+        return editHTML;
+    }
+
+    function formatMoney(value) {
+        if (!isNaN(value) && value) {
+            return parseFloat(value).toLocaleString('en-US', { maximumFractionDigits: 0 });
+        }
+        return value;
+    }
+
+    var headerMenu = function () {
+        var menu = [];
+        var columns = this.getColumns();
+
+        columns.forEach(column => {
+            let icon = document.createElement("i");
+            icon.classList.add("fas");
+            icon.classList.add(column.isVisible() ? "fa-check-square" : "fa-square");
+
+            let label = document.createElement("span");
+            let title = document.createElement("span");
+
+            title.textContent = " " + column.getDefinition().title;
+
+            label.appendChild(icon);
+            label.appendChild(title);
+
+            menu.push({
+                label: label,
+                action: function (e) {
+                    e.stopPropagation();
+
+                    column.toggle();
+
+                    // Change menu item icon
+                    if (column.isVisible()) {
+                        icon.classList.remove("fa-square");
+                        icon.classList.add("fa-check-square");
+                    } else {
+                        icon.classList.remove("fa-check-square");
+                        icon.classList.add("fa-square");
+                    }
+
+                    // Rebuild the menu to reflect changes
+                    column.getTable().redraw(true);
+                }
+            });
+        });
+
+        return menu;
+    };
+
+
+    var table = new Tabulator("#workCandidatesTable", {
+        layout: "fitDataFill",
+        resizableColumnFit: true,
+        data: tableData,
+        pagination: "local",
+        paginationSize: 10,
+        paginationSizeSelector: [5, 10, 25],
+        movableColumns: false,
+        paginationCounter: "rows",
+        height: "500px",
+        columns: [
+
+            { "title": "Project Name", "field": "ProjectName", headerMenu: headerMenu },
+            { "title": "District", "field": "District", headerMenu: headerMenu },
+            { "title": "County", "field": "Cnty", headerMenu: headerMenu },
+            { "title": "Route", "field": "Route", headerMenu: headerMenu },
+            { "title": "Asset Type", "field": "AssetType", headerMenu: headerMenu },
+            { "title": "From Section", "field": "FromSection", headerMenu: headerMenu },
+            { "title": "To Section", "field": "ToSection", headerMenu: headerMenu },
+            { "title": "BRIDGE ID", "field": "BRIDGE_ID", headerMenu: headerMenu },
+            { "title": "Description", "field": "Description", headerMenu: headerMenu, formatter: "textarea", width: "20%" },
+            {
+                "title": "Cost", "field": "Cost", headerMenu: headerMenu, formatter: function (cell, formatterParams, onRendered) {
+                    return formatMoney(cell.getValue());
+                }
+            },
+            { "title": "Predicted Scaled Benefit", "field": "Predicted_Scaled_Benefit", headerMenu: headerMenu },
+            { "title": "Total Score", "field": "Total_Score", headerMenu: headerMenu },
+            { "title": "Import SessionId", "field": "ImportSessionId", visible: false, headerMenu: headerMenu },
+            { "title": "Excess Safety Value", "field": "Excess_Safety_Value", visible: false, headerMenu: headerMenu },
+            { "title": "Predicted Scaled Benefit", "field": "Predicted_Scaled_Benefit", visible: false, headerMenu: headerMenu },
+            { "title": "Degree of Safety Improvement", "field": "Degree_of_Safety_Improvement", visible: false, headerMenu: headerMenu },
+            { "title": "Predicted Safety Benefit", "field": "Predicted_Safety_Benefit", visible: false, headerMenu: headerMenu },
+            { "title": "Safety Score", "field": "Safety_Score", visible: false, headerMenu: headerMenu },
+            { "title": "Travel Time Savings", "field": "Travel_Time_Savings", visible: false, headerMenu: headerMenu },
+            {
+                "title": "Operating Cost Savings", "field": "Operating_Cost_Savings", visible: false, headerMenu: headerMenu, formatter: function (cell, formatterParams, onRendered) {
+                    return formatMoney(cell.getValue());
+                }
+            },
+            { "title": "Percent of Acessibilty Improvement for Disadvantaged Populations", "field": "Percent_of_Acessibilty_Improvement_for_Disadvantaged_Populations", visible: false, headerMenu: headerMenu },
+            {
+                "title": "Predicted Equity and Access Benefit", "field": "Predicted_Equity_and_Access_Benefit", visible: false, headerMenu: headerMenu, formatter: function (cell, formatterParams, onRendered) {
+                    return formatMoney(cell.getValue());
+                }
+            },
+            { "title": "Equity and Access Score", "field": "Equity_and_Access_Score", visible: false, headerMenu: headerMenu },
+            { "title": "Condition and Performance Score", "field": "Condition_and_Performance_Score", visible: false, headerMenu: headerMenu },
+            {
+                "title": "ADT", "field": "ADT", visible: false, headerMenu: headerMenu, formatter: function (cell, formatterParams, onRendered) {
+                    return formatMoney(cell.getValue());
+                }
+            },
+            { "title": "Percent Trucks", "field": "Percent_Trucks", visible: false, headerMenu: headerMenu },
+            { "title": "Population Density", "field": "Population_Density", visible: false, headerMenu: headerMenu },
+            { "title": "Functional Classification", "field": "Functional_Classification", visible: false, headerMenu: headerMenu },
+            { "title": "Treatment", "field": "Treatment", visible: false, headerMenu: headerMenu },
+            { "title": "Year", "field": "Year", visible: false, headerMenu: headerMenu },
+            { title: "Actions", field: "Actions", width: 150, frozen: true, formatter: editMenuFormatter },
+        ],
+    });
+</script>
+
+<script>
+    $(document).on("click", ".createBtn", function () {
+        $("#workCandidatesModal form").attr("action", "/Pools/WorkCandidates?handler=Create");
+        $("#workCandidatesModal input[type=text]").val("");
+        $("#workCandidatesModal").modal("show");
+    });
+</script>

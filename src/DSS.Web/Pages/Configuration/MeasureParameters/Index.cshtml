@@ -1,0 +1,81 @@
+﻿@page
+@model DSS.Web.Pages.Configuration.MeasureParameters.IndexModel
+@{
+}
+@{
+    Layout = "Shared/Layout";
+    ViewData["Menu"] = "DSSMenus.Configuration";
+}
+
+
+<div class="container-fluid px-4">
+    <h1 class="mt-4">Measure Parameters</h1>
+    <ol class="breadcrumb mb-4">
+        <li class="breadcrumb-item"><a href="#">Dashboard</a></li>
+        <li class="breadcrumb-item active">Measure Parameters</li>
+    </ol>
+    <div class="card mb-4">
+        <div class="card-body">
+            <h2>Linear Curves</h2><button type="button" style="float: right; margin-top: -35px;" class="btn btn-primary" data-toggle="modal" data-target="#exampleModal">
+                &nbsp;&nbsp; Click here for an explantion of linear parameters.
+            </button>
+            <form class="form-horizontal" method="POST" action="<?php echo base_url();?>configuration/saveMeasureParameters">
+
+
+                <table width="100%" align="center" border="1" class="table table-bordered table-striped mt-3 mb-5">
+                    <thead>
+                        <tr>
+                            <th width='20%'>Measure</th>
+                            <th>X0</th>
+                            <th>Y0 (%)</th>
+
+                            <th>X1</th>
+                            <th>Y1 (%)</th>
+
+                            <th>m</th>
+                            <th>b</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                    </tbody>
+
+                </table>
+
+
+                <h2>Logistic Curves</h2><button type="button" style="float: right; margin-top: -35px;" class="btn btn-primary" data-toggle="modal" data-target="#logisticModal">
+                    &nbsp;&nbsp; Click here for an explantion of logistic parameters.
+                </button>
+
+                <table width="100%" align="center" border="1" class="table table-bordered table-striped mt-3">
+                    <thead>
+                        <tr>
+                            <th width='15%'>Measure</th>
+                            <th>A (%)</th>
+                            <th>K (%)</th>
+                            <th>M</th>
+                            <th>YM (%)</th>
+                            <th>X1</th>
+                            <th>Y1 (%)</th>
+                            <th style="display:none;">C</th>
+                            <th>v</th>
+                            <th>B</th>
+                        </tr>
+                    </thead>
+
+                    <tbody>
+
+                        
+
+                    </tbody>
+
+                </table>
+
+                <div class="box-footer">
+                    <button type="submit" class="btn btn-info pull-right">Save</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
